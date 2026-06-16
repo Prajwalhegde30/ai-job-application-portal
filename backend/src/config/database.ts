@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { env } from './env';
 import { logger } from '../utils/logger';
 
@@ -46,6 +46,65 @@ export async function connectDatabase(
       delay *= 2;
     }
   }
+}
+
+/**
+ * Gracefully closes the database connection pool.
+ * Should be called during server shutdown.
+ */
+export async function disconnectDatabase(): Promise<void> {
+  try {
+    await pool.end();
+    logger.info('🔌 Database pool closed');
+  } catch (err) {
+    logger.error('Error closing database pool:', err);
+  }
+}
+
+/**
+ * Execute a parameterized SQL query against the pool.
+ * @param text - SQL query string with $1, $2, ... placeholders
+ * @param params - Array of parameter values
+ * @returns QueryResult with typed rows
+ */
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: unknown[]
+): Promise<QueryResult<T>> {
+  const start = Date.now();
+  const result = await pool.query<T>(text, params);
+  const duration = Date.now() - start;
+
+  logger.debug('Executed query', {
+    text: text.substring(0, 80),
+    duration: `${duration}ms`,
+    rows: result.rowCount,
+  });
+
+  return result;
+}
+
+/**
+ * Acquire a client from the pool for transaction support.
+ * Caller is responsible for calling client.release() when done.
+ *
+ * Usage:
+ * ```ts
+ * const client = await getClient();
+ * try {
+ *   await client.query('BEGIN');
+ *   await client.query('INSERT INTO ...');
+ *   await client.query('COMMIT');
+ * } catch (err) {
+ *   await client.query('ROLLBACK');
+ *   throw err;
+ * } finally {
+ *   client.release();
+ * }
+ * ```
+ */
+export async function getClient(): Promise<PoolClient> {
+  return pool.connect();
 }
 
 export { pool as db };

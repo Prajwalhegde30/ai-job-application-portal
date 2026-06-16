@@ -1,43 +1,53 @@
 -- =============================================================================
--- AI Job Application Portal — Complete Database Schema
--- Source of truth: PROJECT.md Section 5.2
+-- Migration 001: Initial Schema
+-- Created: 2026-06-17
+-- Description: Complete database schema for AI Job Application Portal
+-- =============================================================================
+-- This migration creates all tables, enums, indexes, and triggers
+-- required for the application. It is idempotent where possible.
 -- =============================================================================
 
--- Enable UUID generation extension
+BEGIN;
+
+-- =============================================================================
+-- EXTENSIONS
+-- =============================================================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =============================================================================
 -- ENUM TYPES
 -- =============================================================================
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('ADMIN', 'USER');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE user_role AS ENUM ('ADMIN', 'USER');
+DO $$ BEGIN
+    CREATE TYPE job_type AS ENUM ('FULL_TIME', 'PART_TIME', 'CONTRACT', 'REMOTE', 'INTERNSHIP');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE job_type AS ENUM (
-  'FULL_TIME',
-  'PART_TIME',
-  'CONTRACT',
-  'REMOTE',
-  'INTERNSHIP'
-);
+DO $$ BEGIN
+    CREATE TYPE job_status AS ENUM ('DRAFT', 'PUBLISHED', 'CLOSED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE job_status AS ENUM ('DRAFT', 'PUBLISHED', 'CLOSED');
+DO $$ BEGIN
+    CREATE TYPE application_status AS ENUM ('PENDING', 'REVIEWING', 'SHORTLISTED', 'REJECTED', 'HIRED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE application_status AS ENUM (
-  'PENDING',
-  'REVIEWING',
-  'SHORTLISTED',
-  'REJECTED',
-  'HIRED'
-);
-
-CREATE TYPE analysis_type AS ENUM ('RESUME_EXTRACT', 'MATCH_SCORE');
+DO $$ BEGIN
+    CREATE TYPE analysis_type AS ENUM ('RESUME_EXTRACT', 'MATCH_SCORE');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =============================================================================
--- TABLE: users
--- Central user account table. Both admins (recruiters) and regular users
--- (job seekers) share this table, distinguished by the `role` enum.
+-- TABLES
 -- =============================================================================
-CREATE TABLE users (
+
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
     id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email         VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -48,12 +58,8 @@ CREATE TABLE users (
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: profiles
--- One-to-one extension of users. Auto-created on registration.
--- Skills, experience, and education stored as JSONB for flexible schema.
--- =============================================================================
-CREATE TABLE profiles (
+-- PROFILES (one-to-one with users)
+CREATE TABLE IF NOT EXISTS profiles (
     id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id            UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     headline           VARCHAR(255),
@@ -71,12 +77,8 @@ CREATE TABLE profiles (
     updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: jobs
--- Job postings created by ADMIN users. Status lifecycle: DRAFT → PUBLISHED → CLOSED.
--- posted_by references the admin who created the listing.
--- =============================================================================
-CREATE TABLE jobs (
+-- JOBS
+CREATE TABLE IF NOT EXISTS jobs (
     id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     posted_by    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title        VARCHAR(255) NOT NULL,
@@ -93,12 +95,8 @@ CREATE TABLE jobs (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: resumes
--- User-uploaded resume files (PDF). Each user can have multiple resumes
--- with one marked as default. File storage is external (Supabase/Cloudinary).
--- =============================================================================
-CREATE TABLE resumes (
+-- RESUMES
+CREATE TABLE IF NOT EXISTS resumes (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name       VARCHAR(255) NOT NULL,
@@ -108,12 +106,8 @@ CREATE TABLE resumes (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: applications
--- Links a user to a job via a resume. Unique constraint prevents duplicate
--- applications. Status lifecycle: PENDING → REVIEWING → SHORTLISTED → REJECTED | HIRED.
--- =============================================================================
-CREATE TABLE applications (
+-- APPLICATIONS
+CREATE TABLE IF NOT EXISTS applications (
     id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     job_id         UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
     user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -126,13 +120,8 @@ CREATE TABLE applications (
     CONSTRAINT unique_application UNIQUE (job_id, user_id)
 );
 
--- =============================================================================
--- TABLE: ai_analysis
--- Stores AI-generated analysis results. Two types:
--- RESUME_EXTRACT: skills/experience/education extracted from resume PDF
--- MATCH_SCORE: resume-to-job compatibility score with skill gap analysis
--- =============================================================================
-CREATE TABLE ai_analysis (
+-- AI ANALYSIS
+CREATE TABLE IF NOT EXISTS ai_analysis (
     id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     resume_id     UUID NOT NULL REFERENCES resumes(id) ON DELETE CASCADE,
     job_id        UUID REFERENCES jobs(id) ON DELETE SET NULL,
@@ -141,12 +130,8 @@ CREATE TABLE ai_analysis (
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: notifications
--- In-app notifications for users. Created by system events (e.g., application
--- status change). Not persisted chat messages.
--- =============================================================================
-CREATE TABLE notifications (
+-- NOTIFICATIONS
+CREATE TABLE IF NOT EXISTS notifications (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title      VARCHAR(255) NOT NULL,
@@ -156,12 +141,8 @@ CREATE TABLE notifications (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =============================================================================
--- TABLE: refresh_tokens
--- JWT refresh token storage for token rotation pattern. Tokens are hashed
--- before storage. Revoked on logout or rotation.
--- =============================================================================
-CREATE TABLE refresh_tokens (
+-- REFRESH TOKENS
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash VARCHAR(500) UNIQUE NOT NULL,
@@ -169,3 +150,65 @@ CREATE TABLE refresh_tokens (
     is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- =============================================================================
+-- INDEXES
+-- =============================================================================
+
+-- Jobs
+CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+CREATE INDEX IF NOT EXISTS idx_jobs_posted_by ON jobs(posted_by);
+CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC);
+
+-- Applications
+CREATE INDEX IF NOT EXISTS idx_applications_job_id ON applications(job_id);
+CREATE INDEX IF NOT EXISTS idx_applications_user_id ON applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
+
+-- Resumes
+CREATE INDEX IF NOT EXISTS idx_resumes_user_id ON resumes(user_id);
+
+-- AI Analysis
+CREATE INDEX IF NOT EXISTS idx_ai_analysis_resume_id ON ai_analysis(resume_id);
+CREATE INDEX IF NOT EXISTS idx_ai_analysis_type ON ai_analysis(analysis_type);
+
+-- Notifications
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+
+-- Refresh Tokens
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+
+-- =============================================================================
+-- TRIGGERS: Auto-update updated_at on row modification
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
+CREATE TRIGGER trg_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trg_profiles_updated_at ON profiles;
+CREATE TRIGGER trg_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trg_jobs_updated_at ON jobs;
+CREATE TRIGGER trg_jobs_updated_at
+    BEFORE UPDATE ON jobs
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trg_applications_updated_at ON applications;
+CREATE TRIGGER trg_applications_updated_at
+    BEFORE UPDATE ON applications
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+COMMIT;
