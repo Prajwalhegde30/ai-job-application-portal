@@ -1,0 +1,2 @@
+-- Database schema will be implemented in Phase 2
+-- See PROJECT.md Section 5.2 for the complete SQL schema

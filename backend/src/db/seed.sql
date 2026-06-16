@@ -1,0 +1,2 @@
+-- Seed data will be created for development
+-- See PROJECT.md for data structures

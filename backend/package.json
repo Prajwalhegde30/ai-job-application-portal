@@ -1,0 +1,46 @@
+{
+  "name": "ai-job-portal-backend",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src/ server.ts",
+    "lint:fix": "eslint src/ server.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" server.ts",
+    "format:check": "prettier --check \"src/**/*.ts\" server.ts",
+    "test": "echo \"Tests will be added in Phase 8\""
+  },
+  "keywords": ["job-portal", "ai", "resume-analysis"],
+  "author": "",
+  "license": "ISC",
+  "description": "AI-Powered Job Application Portal - Backend API",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.2.0",
+    "morgan": "^1.11.0",
+    "pg": "^8.21.0",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^25.9.3",
+    "@types/pg": "^8.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^10.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "prettier": "^3.8.4",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  }
+}
