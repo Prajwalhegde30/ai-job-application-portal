@@ -12,15 +12,23 @@
     "format:check": "prettier --check \"src/**/*.ts\" server.ts",
     "test": "echo \"Tests will be added in Phase 8\""
   },
-  "keywords": ["job-portal", "ai", "resume-analysis"],
+  "keywords": [
+    "job-portal",
+    "ai",
+    "resume-analysis"
+  ],
   "author": "",
   "license": "ISC",
   "description": "AI-Powered Job Application Portal - Backend API",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
     "pg": "^8.21.0",
     "winston": "^3.19.0",
@@ -28,8 +36,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.9.3",
     "@types/pg": "^8.20.0",

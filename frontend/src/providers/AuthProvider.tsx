@@ -1,41 +1,150 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+import { useAuthStore } from '@/store/authStore';
+import { setAccessToken, clearAccessToken } from '@/lib/auth';
+import api from '@/lib/api';
+import type { LoginFormData, RegisterFormData } from '@/lib/validators/auth';
 
 /**
- * Auth context placeholder.
- * Will hold user state, login/logout functions once auth is implemented.
+ * Authenticated user data.
+ */
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'USER';
+}
+
+/**
+ * Auth context type exposing auth state and actions.
  */
 interface AuthContextType {
-  user: null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  login: (data: LoginFormData) => Promise<void>;
+  register: (data: RegisterFormData) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
 /**
- * Auth provider placeholder.
- * Will be fully implemented in Phase 2 with JWT token management.
+ * Auth provider component.
+ * - On mount: attempts silent refresh to restore session from HTTP-only cookie
+ * - Provides login/register/logout actions to all children
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <AuthContext.Provider
-      value={{
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const { user, isAuthenticated, isLoading, setAuth, clearAuth, setLoading } =
+    useAuthStore();
+
+  /**
+   * Attempt to restore session on mount.
+   * If a valid refresh token cookie exists, the backend will return a new access token.
+   */
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const response = await api.post('/auth/refresh');
+        const { accessToken } = response.data.data;
+        setAccessToken(accessToken);
+
+        // Fetch user data
+        const meResponse = await api.get('/auth/me');
+        setAuth(meResponse.data.data);
+      } catch {
+        // No valid refresh token — user is not authenticated
+        clearAuth();
+      }
+    };
+
+    restoreSession();
+  }, [setAuth, clearAuth]);
+
+  /**
+   * Login with email and password.
+   */
+  const login = useCallback(
+    async (data: LoginFormData) => {
+      setLoading(true);
+      try {
+        const response = await api.post('/auth/login', data);
+        const { user: userData, accessToken } = response.data.data;
+
+        setAccessToken(accessToken);
+        setAuth(userData);
+      } catch (error) {
+        setLoading(false);
+        throw error;
+      }
+    },
+    [setAuth, setLoading]
   );
+
+  /**
+   * Register a new user account.
+   */
+  const register = useCallback(
+    async (data: RegisterFormData) => {
+      setLoading(true);
+      try {
+        const response = await api.post('/auth/register', data);
+        const { user: userData, accessToken } = response.data.data;
+
+        setAccessToken(accessToken);
+        setAuth(userData);
+      } catch (error) {
+        setLoading(false);
+        throw error;
+      }
+    },
+    [setAuth, setLoading]
+  );
+
+  /**
+   * Logout: revoke refresh token and clear state.
+   */
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Silently ignore logout errors (token may already be expired)
+    } finally {
+      clearAccessToken();
+      clearAuth();
+    }
+  }, [clearAuth]);
+
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      register,
+      logout,
+    }),
+    [user, isAuthenticated, isLoading, login, register, logout]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuthContext() {
-  return useContext(AuthContext);
+/**
+ * Hook to access auth context.
+ * Must be used within an AuthProvider.
+ */
+export function useAuthContext(): AuthContextType {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuthContext must be used within an AuthProvider');
+  }
+  return context;
 }

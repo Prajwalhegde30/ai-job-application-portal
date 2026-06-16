@@ -1,18 +1,47 @@
 import { create } from 'zustand';
 
 /**
- * Auth store using Zustand.
- * Manages auth state as an alternative/complement to AuthProvider context.
- * Will be fully implemented in Phase 2.
+ * Authenticated user data stored in the client.
  */
-interface AuthState {
-  user: null;
-  accessToken: string | null;
-  isAuthenticated: boolean;
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'USER';
 }
 
-export const useAuthStore = create<AuthState>()(() => ({
+/**
+ * Auth state managed by Zustand.
+ * Access token stored in memory (via lib/auth.ts).
+ * Refresh token stored in HTTP-only cookie (managed by browser).
+ */
+interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  setAuth: (user: AuthUser) => void;
+  clearAuth: () => void;
+  setLoading: (loading: boolean) => void;
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
-  accessToken: null,
   isAuthenticated: false,
+  isLoading: true, // True initially until auth check completes
+
+  setAuth: (user: AuthUser) =>
+    set({
+      user,
+      isAuthenticated: true,
+      isLoading: false,
+    }),
+
+  clearAuth: () =>
+    set({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    }),
+
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
 }));

@@ -2,8 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { errorMiddleware } from './middleware/error.middleware';
+import { authRateLimit } from './middleware/rateLimit.middleware';
+import { authRoutes } from './modules/auth';
 import { sendSuccess } from './utils/response';
 
 const app = express();
@@ -27,6 +30,7 @@ app.use(
 // ---------------------
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ---------------------
 // Logging Middleware
@@ -44,9 +48,9 @@ app.get('/api/v1/health', (_req, res) => {
 });
 
 // ---------------------
-// API Routes (to be registered in future phases)
+// API Routes
 // ---------------------
-// app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authRateLimit, authRoutes);
 // app.use('/api/v1/profile', profileRoutes);
 // app.use('/api/v1/jobs', jobRoutes);
 // app.use('/api/v1/applications', applicationRoutes);

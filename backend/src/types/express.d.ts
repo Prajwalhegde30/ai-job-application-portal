@@ -1,20 +1,17 @@
-import { Request } from 'express';
-
 /**
  * Augment Express Request to include authenticated user info.
- * Used by auth middleware once implemented.
+ * Populated by the authenticate() middleware from JWT payload.
  */
 declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: string;
+        userId: string;
         email: string;
         role: 'ADMIN' | 'USER';
-        name: string;
       };
     }
   }
 }
 
-export { Request };
+export {};
