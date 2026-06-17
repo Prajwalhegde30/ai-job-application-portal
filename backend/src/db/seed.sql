@@ -12,6 +12,18 @@ TRUNCATE refresh_tokens, notifications, ai_analysis, applications, resumes, jobs
 -- ADMIN USERS (2)
 -- =============================================================================
 
+-- Deterministic Admin (Test Account)
+INSERT INTO users (id, email, password_hash, name, role) VALUES
+('a0000000-0000-0000-0000-000000000000', 'admin@test.com',
+ '$2b$12$mj8sfJLZsDYs0qeEROu0c.IvYBh1Scqb/Tl8XPdmwxt84X9NZwzrG',
+ 'Test Admin', 'ADMIN');
+
+INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, skills, profile_completion) VALUES
+('a0000000-0000-0000-0000-000000000000', 'Portal Administrator',
+ 'System administrator for the AI Job Application Portal.',
+ 'New York, NY', '+1-800-555-0100', 'https://linkedin.com/in/admin',
+ '["Database", "Security", "Administration"]'::jsonb, 90);
+
 -- Admin 1: Sarah Chen (TechCorp recruiter)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
 ('a0000001-0000-0000-0000-000000000001', 'sarah.chen@techcorp.com',
@@ -40,14 +52,30 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, ski
 -- REGULAR USERS (5)
 -- =============================================================================
 
+-- Deterministic User (Test Account)
+INSERT INTO users (id, email, password_hash, name, role) VALUES
+('b0000000-0000-0000-0000-000000000000', 'user@test.com',
+ '$2b$12$nD729XzSOg7mKroculL91.HEeHBarkHmStoFdS/oROkPJpuFek83W',
+ 'Test User', 'USER');
+
+INSERT INTO profiles (user_id, headline, bio, location, phone, website, linkedin_url, github_url, skills, experience, education, profile_completion) VALUES
+('b0000000-0000-0000-0000-000000000000', 'Software Engineer',
+ 'Full stack engineer with a focus on Node.js and TypeScript.',
+ 'San Francisco, CA', '+1-800-555-0200', 'https://user.dev',
+ 'https://linkedin.com/in/user', 'https://github.com/user',
+ '["TypeScript", "Node.js", "React"]'::jsonb,
+ '[{"company":"Tech Corp","title":"Software Engineer","startDate":"2024-01","endDate":"","current":true,"description":"Working on TypeScript applications."}]'::jsonb,
+ '[{"institution":"University of Computer Science","degree":"B.S.","field":"Computer Science","startYear":2020,"endYear":2024}]'::jsonb,
+ 85);
+
 -- User 1: Priya Sharma (Full-stack developer)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
-('u0000001-0000-0000-0000-000000000001', 'priya.sharma@email.com',
+('b0000001-0000-0000-0000-000000000001', 'priya.sharma@email.com',
  '$2b$12$LJ3m4ys3Lg4VJbmHhEJDOu5Y9K6aD3AelWJ6Y7m0S1XzD.qLGfJXe',
  'Priya Sharma', 'USER');
 
 INSERT INTO profiles (user_id, headline, bio, location, phone, website, linkedin_url, github_url, skills, experience, education, profile_completion) VALUES
-('u0000001-0000-0000-0000-000000000001', 'Full Stack Developer | React & Node.js',
+('b0000001-0000-0000-0000-000000000001', 'Full Stack Developer | React & Node.js',
  'Passionate full-stack developer with 3 years of experience building scalable web applications. Strong focus on React ecosystem and Node.js backends.',
  'Bengaluru, India', '+91-98765-43210', 'https://priyasharma.dev',
  'https://linkedin.com/in/priyasharma', 'https://github.com/priyasharma',
@@ -58,12 +86,12 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, website, linkedin
 
 -- User 2: James Wilson (Backend engineer)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
-('u0000002-0000-0000-0000-000000000002', 'james.wilson@email.com',
+('b0000002-0000-0000-0000-000000000002', 'james.wilson@email.com',
  '$2b$12$LJ3m4ys3Lg4VJbmHhEJDOu5Y9K6aD3AelWJ6Y7m0S1XzD.qLGfJXe',
  'James Wilson', 'USER');
 
 INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, github_url, skills, experience, education, profile_completion) VALUES
-('u0000002-0000-0000-0000-000000000002', 'Backend Engineer | Python & Go',
+('b0000002-0000-0000-0000-000000000002', 'Backend Engineer | Python & Go',
  'Backend engineer focused on distributed systems and API design. Open source contributor.',
  'Seattle, WA', '+1-206-555-0303',
  'https://linkedin.com/in/jameswilson', 'https://github.com/jameswilson',
@@ -74,12 +102,12 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, git
 
 -- User 3: Emily Zhang (Frontend developer, recent grad)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
-('u0000003-0000-0000-0000-000000000003', 'emily.zhang@email.com',
+('b0000003-0000-0000-0000-000000000003', 'emily.zhang@email.com',
  '$2b$12$LJ3m4ys3Lg4VJbmHhEJDOu5Y9K6aD3AelWJ6Y7m0S1XzD.qLGfJXe',
  'Emily Zhang', 'USER');
 
 INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, skills, education, profile_completion) VALUES
-('u0000003-0000-0000-0000-000000000003', 'Frontend Developer | React & Next.js',
+('b0000003-0000-0000-0000-000000000003', 'Frontend Developer | React & Next.js',
  'Recent CS graduate passionate about building beautiful, accessible user interfaces.',
  'New York, NY', '+1-212-555-0404', 'https://linkedin.com/in/emilyzhang',
  '["React", "Next.js", "TypeScript", "Tailwind CSS", "Figma", "Jest"]'::jsonb,
@@ -88,12 +116,12 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, ski
 
 -- User 4: Carlos Rivera (DevOps engineer)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
-('u0000004-0000-0000-0000-000000000004', 'carlos.rivera@email.com',
+('b0000004-0000-0000-0000-000000000004', 'carlos.rivera@email.com',
  '$2b$12$LJ3m4ys3Lg4VJbmHhEJDOu5Y9K6aD3AelWJ6Y7m0S1XzD.qLGfJXe',
  'Carlos Rivera', 'USER');
 
 INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, skills, experience, education, profile_completion) VALUES
-('u0000004-0000-0000-0000-000000000004', 'DevOps Engineer | AWS & Kubernetes',
+('b0000004-0000-0000-0000-000000000004', 'DevOps Engineer | AWS & Kubernetes',
  'Infrastructure and reliability engineer with a passion for automation and observability.',
  'Denver, CO', '+1-303-555-0505', 'https://linkedin.com/in/carlosrivera',
  '["AWS", "Kubernetes", "Docker", "Terraform", "CI/CD", "Python", "Prometheus", "Grafana"]'::jsonb,
@@ -103,12 +131,12 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, ski
 
 -- User 5: Aisha Patel (Data scientist)
 INSERT INTO users (id, email, password_hash, name, role) VALUES
-('u0000005-0000-0000-0000-000000000005', 'aisha.patel@email.com',
+('b0000005-0000-0000-0000-000000000005', 'aisha.patel@email.com',
  '$2b$12$LJ3m4ys3Lg4VJbmHhEJDOu5Y9K6aD3AelWJ6Y7m0S1XzD.qLGfJXe',
  'Aisha Patel', 'USER');
 
 INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, skills, experience, education, profile_completion) VALUES
-('u0000005-0000-0000-0000-000000000005', 'Data Scientist | ML & NLP',
+('b0000005-0000-0000-0000-000000000005', 'Data Scientist | ML & NLP',
  'Data scientist specializing in NLP and recommendation systems. Published researcher.',
  'Boston, MA', '+1-617-555-0606', 'https://linkedin.com/in/aishapatel',
  '["Python", "TensorFlow", "PyTorch", "SQL", "NLP", "Scikit-learn", "Pandas", "Spark"]'::jsonb,
@@ -122,7 +150,7 @@ INSERT INTO profiles (user_id, headline, bio, location, phone, linkedin_url, ski
 
 -- Job 1: Published - Senior React Developer (by Sarah)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status) VALUES
-('j0000001-0000-0000-0000-000000000001',
+('c0000001-0000-0000-0000-000000000001',
  'a0000001-0000-0000-0000-000000000001',
  'Senior React Developer',
  'TechCorp',
@@ -133,7 +161,7 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 
 -- Job 2: Published - Backend Engineer (by Sarah)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status) VALUES
-('j0000002-0000-0000-0000-000000000002',
+('c0000002-0000-0000-0000-000000000002',
  'a0000001-0000-0000-0000-000000000001',
  'Backend Engineer - Node.js',
  'TechCorp',
@@ -144,7 +172,7 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 
 -- Job 3: Published - Full Stack Engineer (by Marcus)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status) VALUES
-('j0000003-0000-0000-0000-000000000003',
+('c0000003-0000-0000-0000-000000000003',
  'a0000002-0000-0000-0000-000000000002',
  'Full Stack Engineer',
  'StartupHub',
@@ -155,7 +183,7 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 
 -- Job 4: Published - DevOps Engineer (by Marcus)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status) VALUES
-('j0000004-0000-0000-0000-000000000004',
+('c0000004-0000-0000-0000-000000000004',
  'a0000002-0000-0000-0000-000000000002',
  'DevOps Engineer',
  'StartupHub',
@@ -166,7 +194,7 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 
 -- Job 5: Draft - Data Scientist (by Sarah, not yet published)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status) VALUES
-('j0000005-0000-0000-0000-000000000005',
+('c0000005-0000-0000-0000-000000000005',
  'a0000001-0000-0000-0000-000000000001',
  'Data Scientist - NLP',
  'TechCorp',
@@ -177,7 +205,7 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 
 -- Job 6: Closed - Frontend Intern (by Marcus, hiring completed)
 INSERT INTO jobs (id, posted_by, title, company, description, requirements, location, salary_min, salary_max, job_type, status, closed_at) VALUES
-('j0000006-0000-0000-0000-000000000006',
+('c0000006-0000-0000-0000-000000000006',
  'a0000002-0000-0000-0000-000000000002',
  'Frontend Intern - Summer 2026',
  'StartupHub',
@@ -191,21 +219,21 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 -- =============================================================================
 
 INSERT INTO resumes (id, user_id, name, file_url, file_key, is_default) VALUES
-('r0000001-0000-0000-0000-000000000001', 'u0000001-0000-0000-0000-000000000001',
+('d0000001-0000-0000-0000-000000000001', 'b0000001-0000-0000-0000-000000000001',
  'Priya_Sharma_Resume_2026.pdf', 'https://storage.example.com/resumes/priya_2026.pdf',
- 'resumes/u0000001/priya_2026.pdf', TRUE),
-('r0000002-0000-0000-0000-000000000002', 'u0000002-0000-0000-0000-000000000002',
+ 'resumes/b0000001/priya_2026.pdf', TRUE),
+('d0000002-0000-0000-0000-000000000002', 'b0000002-0000-0000-0000-000000000002',
  'James_Wilson_Resume.pdf', 'https://storage.example.com/resumes/james_2026.pdf',
- 'resumes/u0000002/james_2026.pdf', TRUE),
-('r0000003-0000-0000-0000-000000000003', 'u0000003-0000-0000-0000-000000000003',
+ 'resumes/b0000002/james_2026.pdf', TRUE),
+('d0000003-0000-0000-0000-000000000003', 'b0000003-0000-0000-0000-000000000003',
  'Emily_Zhang_Resume.pdf', 'https://storage.example.com/resumes/emily_2026.pdf',
- 'resumes/u0000003/emily_2026.pdf', TRUE),
-('r0000004-0000-0000-0000-000000000004', 'u0000004-0000-0000-0000-000000000004',
+ 'resumes/b0000003/emily_2026.pdf', TRUE),
+('d0000004-0000-0000-0000-000000000004', 'b0000004-0000-0000-0000-000000000004',
  'Carlos_Rivera_Resume.pdf', 'https://storage.example.com/resumes/carlos_2026.pdf',
- 'resumes/u0000004/carlos_2026.pdf', TRUE),
-('r0000005-0000-0000-0000-000000000005', 'u0000005-0000-0000-0000-000000000005',
+ 'resumes/b0000004/carlos_2026.pdf', TRUE),
+('d0000005-0000-0000-0000-000000000005', 'b0000005-0000-0000-0000-000000000005',
  'Aisha_Patel_CV.pdf', 'https://storage.example.com/resumes/aisha_2026.pdf',
- 'resumes/u0000005/aisha_2026.pdf', TRUE);
+ 'resumes/b0000005/aisha_2026.pdf', TRUE);
 
 -- =============================================================================
 -- APPLICATIONS (sample applications to published jobs)
@@ -213,55 +241,55 @@ INSERT INTO resumes (id, user_id, name, file_url, file_key, is_default) VALUES
 
 -- Priya applies to Senior React Developer (match: strong)
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000001-0000-0000-0000-000000000001',
- 'j0000001-0000-0000-0000-000000000001',
- 'u0000001-0000-0000-0000-000000000001',
- 'r0000001-0000-0000-0000-000000000001',
+('e0000001-0000-0000-0000-000000000001',
+ 'c0000001-0000-0000-0000-000000000001',
+ 'b0000001-0000-0000-0000-000000000001',
+ 'd0000001-0000-0000-0000-000000000001',
  'I am excited to apply for the Senior React Developer position at TechCorp. With 3 years of experience building React applications and a strong TypeScript background, I believe I would be a great fit for your frontend team.',
  'SHORTLISTED', 85);
 
 -- Priya also applies to Full Stack Engineer
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000002-0000-0000-0000-000000000002',
- 'j0000003-0000-0000-0000-000000000003',
- 'u0000001-0000-0000-0000-000000000001',
- 'r0000001-0000-0000-0000-000000000001',
+('e0000002-0000-0000-0000-000000000002',
+ 'c0000003-0000-0000-0000-000000000003',
+ 'b0000001-0000-0000-0000-000000000001',
+ 'd0000001-0000-0000-0000-000000000001',
  'As a full-stack developer experienced in both React and Node.js, I am thrilled about the opportunity to join StartupHub as your first full-stack hire.',
  'REVIEWING', 78);
 
 -- James applies to Backend Engineer
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000003-0000-0000-0000-000000000003',
- 'j0000002-0000-0000-0000-000000000002',
- 'u0000002-0000-0000-0000-000000000002',
- 'r0000002-0000-0000-0000-000000000002',
+('e0000003-0000-0000-0000-000000000003',
+ 'c0000002-0000-0000-0000-000000000002',
+ 'b0000002-0000-0000-0000-000000000002',
+ 'd0000002-0000-0000-0000-000000000002',
  'With extensive backend engineering experience and a focus on distributed systems, I am eager to contribute to TechCorp''s API infrastructure.',
  'PENDING', 72);
 
 -- Emily applies to Senior React Developer
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000004-0000-0000-0000-000000000004',
- 'j0000001-0000-0000-0000-000000000001',
- 'u0000003-0000-0000-0000-000000000003',
- 'r0000003-0000-0000-0000-000000000003',
+('e0000004-0000-0000-0000-000000000004',
+ 'c0000001-0000-0000-0000-000000000001',
+ 'b0000003-0000-0000-0000-000000000003',
+ 'd0000003-0000-0000-0000-000000000003',
  'While I am a recent graduate, my strong foundation in React, Next.js, and TypeScript makes me a motivated candidate for this role.',
  'REJECTED', 55);
 
 -- Carlos applies to DevOps Engineer
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000005-0000-0000-0000-000000000005',
- 'j0000004-0000-0000-0000-000000000004',
- 'u0000004-0000-0000-0000-000000000004',
- 'r0000004-0000-0000-0000-000000000004',
+('e0000005-0000-0000-0000-000000000005',
+ 'c0000004-0000-0000-0000-000000000004',
+ 'b0000004-0000-0000-0000-000000000004',
+ 'd0000004-0000-0000-0000-000000000004',
  'I bring 5+ years of DevOps experience with AWS, Kubernetes, and Terraform. I am excited about the challenge of scaling StartupHub''s infrastructure.',
  'SHORTLISTED', 91);
 
 -- Aisha applies to Backend Engineer
 INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, ai_match_score) VALUES
-('ap000006-0000-0000-0000-000000000006',
- 'j0000002-0000-0000-0000-000000000002',
- 'u0000005-0000-0000-0000-000000000005',
- 'r0000005-0000-0000-0000-000000000005',
+('e0000006-0000-0000-0000-000000000006',
+ 'c0000002-0000-0000-0000-000000000002',
+ 'b0000005-0000-0000-0000-000000000005',
+ 'd0000005-0000-0000-0000-000000000005',
  'My experience with Python, SQL, and building ML pipelines gives me a unique perspective on backend engineering challenges.',
  'PENDING', 65);
 
@@ -270,27 +298,27 @@ INSERT INTO applications (id, job_id, user_id, resume_id, cover_letter, status, 
 -- =============================================================================
 
 INSERT INTO notifications (user_id, title, message, is_read, link) VALUES
-('u0000001-0000-0000-0000-000000000001',
+('b0000001-0000-0000-0000-000000000001',
  'Application Shortlisted!',
  'Your application for Senior React Developer at TechCorp has been shortlisted. The hiring team will be in touch soon.',
  TRUE, '/applications'),
-('u0000001-0000-0000-0000-000000000001',
+('b0000001-0000-0000-0000-000000000001',
  'Application Under Review',
  'Your application for Full Stack Engineer at StartupHub is now being reviewed by the hiring manager.',
  FALSE, '/applications'),
-('u0000003-0000-0000-0000-000000000003',
+('b0000003-0000-0000-0000-000000000003',
  'Application Update',
  'Your application for Senior React Developer at TechCorp has been reviewed. Unfortunately, we have decided to move forward with other candidates.',
  FALSE, '/applications'),
-('u0000004-0000-0000-0000-000000000004',
+('b0000004-0000-0000-0000-000000000004',
  'Application Shortlisted!',
  'Great news! Your application for DevOps Engineer at StartupHub has been shortlisted.',
  FALSE, '/applications'),
 ('a0000001-0000-0000-0000-000000000001',
  'New Application Received',
  'Priya Sharma has applied to your Senior React Developer position at TechCorp.',
- TRUE, '/admin/jobs/j0000001-0000-0000-0000-000000000001/applications'),
+ TRUE, '/admin/jobs/c0000001-0000-0000-0000-000000000001/applications'),
 ('a0000002-0000-0000-0000-000000000002',
  'New Application Received',
  'Carlos Rivera has applied to your DevOps Engineer position at StartupHub.',
- FALSE, '/admin/jobs/j0000004-0000-0000-0000-000000000004/applications');
+ FALSE, '/admin/jobs/c0000004-0000-0000-0000-000000000004/applications');

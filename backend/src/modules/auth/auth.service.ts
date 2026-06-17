@@ -35,6 +35,9 @@ interface AuthTokens {
 export async function register(
   data: RegisterInput
 ): Promise<{ user: UserResponse } & AuthTokens> {
+  // Defense-in-depth: explicitly strip role property to prevent privilege escalation
+  delete (data as Record<string, unknown>).role;
+
   // Check email uniqueness
   const existing = await query('SELECT id FROM users WHERE email = $1', [
     data.email,

@@ -295,14 +295,14 @@ async function checkConstraints(): Promise<void> {
 async function checkTriggers(): Promise<void> {
   console.log('\n⚡ Test 6: updated_at Trigger');
 
+  let userId: string | null = null;
   try {
-    await pool.query('BEGIN');
     const result = await pool.query(
       `INSERT INTO users (email, password_hash, name, role)
        VALUES ('trigger_test@test.com', 'hash123', 'Trigger Test', 'USER')
        RETURNING id, updated_at`
     );
-    const userId = result.rows[0].id;
+    userId = result.rows[0].id;
     const originalUpdatedAt = result.rows[0].updated_at;
 
     // Wait briefly to ensure timestamp difference
@@ -322,10 +322,19 @@ async function checkTriggers(): Promise<void> {
     } else {
       logFail('updated_at trigger — timestamp was not updated');
     }
-    await pool.query('ROLLBACK');
   } catch (err) {
     logFail('updated_at trigger test', (err as Error).message);
-    await pool.query('ROLLBACK');
+  } finally {
+    if (userId) {
+      try {
+        await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+      } catch (err) {
+        console.error(
+          'Error cleaning up trigger test user:',
+          (err as Error).message
+        );
+      }
+    }
   }
 }
 

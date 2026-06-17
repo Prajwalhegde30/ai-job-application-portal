@@ -24,15 +24,17 @@ const passwordSchema = z
  * Role is always USER — ADMIN accounts are created through seed data
  * or controlled onboarding only.
  */
-export const registerSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Name must be at least 2 characters')
-    .max(255, 'Name must be at most 255 characters')
-    .trim(),
-  email: z.string().email('Invalid email address').toLowerCase().trim(),
-  password: passwordSchema,
-});
+export const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, 'Name must be at least 2 characters')
+      .max(255, 'Name must be at most 255 characters')
+      .trim(),
+    email: z.string().email('Invalid email address').toLowerCase().trim(),
+    password: passwordSchema,
+  })
+  .strict();
 
 /**
  * POST /api/v1/auth/login
