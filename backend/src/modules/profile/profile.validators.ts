@@ -1,70 +1,73 @@
 import { z } from 'zod';
 
 /**
- * Experience entry schema — matches backend validation.
+ * Experience entry schema — matches PROJECT.md JSONB definition.
  */
-export const experienceEntrySchema = z.object({
-  company: z
-    .string()
-    .min(1, 'Company name is required')
-    .max(255, 'Company name must be at most 255 characters')
-    .trim(),
-  title: z
-    .string()
-    .min(1, 'Job title is required')
-    .max(255, 'Job title must be at most 255 characters')
-    .trim(),
-  startDate: z
-    .string()
-    .min(1, 'Start date is required')
-    .max(20, 'Start date must be at most 20 characters')
-    .trim(),
-  endDate: z
-    .string()
-    .max(20, 'End date must be at most 20 characters')
-    .trim()
-    .default(''),
-  current: z.boolean().default(false),
-  description: z
-    .string()
-    .max(2000, 'Description must be at most 2000 characters')
-    .trim()
-    .default(''),
-});
+const experienceEntrySchema = z
+  .object({
+    company: z
+      .string()
+      .min(1, 'Company name is required')
+      .max(255, 'Company name must be at most 255 characters')
+      .trim(),
+    title: z
+      .string()
+      .min(1, 'Job title is required')
+      .max(255, 'Job title must be at most 255 characters')
+      .trim(),
+    startDate: z
+      .string()
+      .min(1, 'Start date is required')
+      .max(20, 'Start date must be at most 20 characters')
+      .trim(),
+    endDate: z
+      .string()
+      .max(20, 'End date must be at most 20 characters')
+      .trim()
+      .default(''),
+    current: z.boolean().default(false),
+    description: z
+      .string()
+      .max(2000, 'Description must be at most 2000 characters')
+      .trim()
+      .default(''),
+  })
+  .strict();
 
 /**
- * Education entry schema — matches backend validation.
- * Uses coercion to handle number values from text/number inputs.
+ * Education entry schema — matches PROJECT.md JSONB definition.
  */
-export const educationEntrySchema = z.object({
-  institution: z
-    .string()
-    .min(1, 'Institution is required')
-    .max(255, 'Institution must be at most 255 characters')
-    .trim(),
-  degree: z
-    .string()
-    .min(1, 'Degree is required')
-    .max(255, 'Degree must be at most 255 characters')
-    .trim(),
-  field: z
-    .string()
-    .min(1, 'Field of study is required')
-    .max(255, 'Field must be at most 255 characters')
-    .trim(),
-  startYear: z.coerce
-    .number()
-    .int('Start year must be an integer')
-    .min(1950, 'Start year must be 1950 or later')
-    .max(2100, 'Start year must be 2100 or earlier'),
-  endYear: z
-    .preprocess((val) => {
-      if (val === '' || val === null || val === undefined) return null;
-      return val;
-    }, z.coerce.number().int().min(1950, 'End year must be 1950 or later').max(2100, 'End year must be 2100 or earlier').nullable())
-    .optional()
-    .default(null),
-});
+const educationEntrySchema = z
+  .object({
+    institution: z
+      .string()
+      .min(1, 'Institution is required')
+      .max(255, 'Institution must be at most 255 characters')
+      .trim(),
+    degree: z
+      .string()
+      .min(1, 'Degree is required')
+      .max(255, 'Degree must be at most 255 characters')
+      .trim(),
+    field: z
+      .string()
+      .min(1, 'Field of study is required')
+      .max(255, 'Field must be at most 255 characters')
+      .trim(),
+    startYear: z
+      .number()
+      .int('Start year must be an integer')
+      .min(1950, 'Start year must be 1950 or later')
+      .max(2100, 'Start year must be 2100 or earlier'),
+    endYear: z
+      .number()
+      .int('End year must be an integer')
+      .min(1950, 'End year must be 1950 or later')
+      .max(2100, 'End year must be 2100 or earlier')
+      .nullable()
+      .default(null),
+  })
+  .strict();
 
 /**
  * URL validation helper — accepts empty string or valid http(s) URL.
@@ -84,7 +87,9 @@ const optionalUrl = z
       }
     },
     { message: 'Must be a valid URL (http or https)' }
-  );
+  )
+  .transform((val) => val || null)
+  .optional();
 
 /**
  * LinkedIn URL — must contain linkedin.com if provided.
@@ -107,7 +112,9 @@ const linkedinUrl = z
       }
     },
     { message: 'Must be a valid LinkedIn URL' }
-  );
+  )
+  .transform((val) => val || null)
+  .optional();
 
 /**
  * GitHub URL — must contain github.com if provided.
@@ -130,7 +137,9 @@ const githubUrl = z
       }
     },
     { message: 'Must be a valid GitHub URL' }
-  );
+  )
+  .transform((val) => val || null)
+  .optional();
 
 /**
  * Phone number validation — flexible international format.
@@ -145,34 +154,37 @@ const phoneSchema = z
       return /^\+?[\d\s\-().]{7,20}$/.test(val);
     },
     { message: 'Must be a valid phone number' }
-  );
+  )
+  .transform((val) => val || null)
+  .optional();
 
 /**
- * Frontend profile schema.
+ * PUT /api/v1/profile
+ * All fields are optional — only provided fields are updated.
  */
-export const profileSchema = z.object({
+export const updateProfileSchema = z.object({
   headline: z
     .string()
     .max(255, 'Headline must be at most 255 characters')
     .trim()
-    .nullable()
+    .transform((val) => val || null)
     .optional(),
   bio: z
     .string()
     .max(2000, 'Bio must be at most 2000 characters')
     .trim()
-    .nullable()
+    .transform((val) => val || null)
     .optional(),
   location: z
     .string()
     .max(255, 'Location must be at most 255 characters')
     .trim()
-    .nullable()
+    .transform((val) => val || null)
     .optional(),
-  phone: phoneSchema.nullable().optional(),
-  website: optionalUrl.nullable().optional(),
-  linkedin_url: linkedinUrl.nullable().optional(),
-  github_url: githubUrl.nullable().optional(),
+  phone: phoneSchema,
+  website: optionalUrl,
+  linkedin_url: linkedinUrl,
+  github_url: githubUrl,
   skills: z
     .array(
       z
@@ -182,17 +194,16 @@ export const profileSchema = z.object({
         .trim()
     )
     .max(50, 'Maximum 50 skills allowed')
-    .default([]),
+    .transform((arr) => [...new Set(arr)]) // Deduplicate
+    .optional(),
   experience: z
     .array(experienceEntrySchema)
     .max(20, 'Maximum 20 experience entries')
-    .default([]),
+    .optional(),
   education: z
     .array(educationEntrySchema)
     .max(20, 'Maximum 20 education entries')
-    .default([]),
+    .optional(),
 });
 
-export type ProfileFormData = z.infer<typeof profileSchema>;
-export type ExperienceEntry = z.infer<typeof experienceEntrySchema>;
-export type EducationEntry = z.infer<typeof educationEntrySchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

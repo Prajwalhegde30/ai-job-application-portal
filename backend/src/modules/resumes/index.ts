@@ -1,2 +1,1 @@
-// Resumes module — will be implemented in Phase 5
-export {};
+export { default as resumesRoutes } from './resumes.routes';

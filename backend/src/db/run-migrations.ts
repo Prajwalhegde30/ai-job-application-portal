@@ -3,6 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { db, connectDatabase, disconnectDatabase } from '../config/database';
 
+/**
+ * Sequential migration runner.
+ * Scans the migrations/ folder, sorts .sql files alphabetically,
+ * and executes each in order within its own transaction.
+ */
 async function runMigrations(): Promise<void> {
   console.log('='.repeat(60));
   console.log('  AI Job Portal — Database Migration Script');
@@ -12,23 +17,44 @@ async function runMigrations(): Promise<void> {
     // 1. Establish DB Connection
     await connectDatabase(3, 1000);
 
-    // 2. Read migration file
-    const migrationPath = path.join(__dirname, 'migrations', '001_init.sql');
-    console.log(`\nReading migration file: ${migrationPath}`);
+    // 2. Discover migration files
+    const migrationsDir = path.join(__dirname, 'migrations');
 
-    if (!fs.existsSync(migrationPath)) {
-      throw new Error(`Migration file not found at: ${migrationPath}`);
+    if (!fs.existsSync(migrationsDir)) {
+      throw new Error(`Migrations directory not found at: ${migrationsDir}`);
     }
 
-    const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+    const migrationFiles = fs
+      .readdirSync(migrationsDir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort(); // Alphabetical sort ensures 001 < 002 < 003 etc.
 
-    // 3. Run migration SQL
-    console.log('Executing migration SQL script...');
-    const startTime = Date.now();
-    await db.query(migrationSql);
-    const duration = Date.now() - startTime;
+    if (migrationFiles.length === 0) {
+      console.log('\nNo migration files found. Nothing to execute.');
+      process.exit(0);
+    }
 
-    console.log(`\n✅ Migration successfully executed in ${duration}ms.`);
+    console.log(`\nFound ${migrationFiles.length} migration file(s):`);
+    migrationFiles.forEach((f) => console.log(`  → ${f}`));
+
+    // 3. Execute each migration in order
+    const totalStart = Date.now();
+
+    for (const file of migrationFiles) {
+      const filePath = path.join(migrationsDir, file);
+      const sql = fs.readFileSync(filePath, 'utf8');
+
+      console.log(`\nExecuting: ${file}...`);
+      const start = Date.now();
+      await db.query(sql);
+      const duration = Date.now() - start;
+      console.log(`  ✅ ${file} completed in ${duration}ms`);
+    }
+
+    const totalDuration = Date.now() - totalStart;
+    console.log(
+      `\n✅ All ${migrationFiles.length} migrations executed in ${totalDuration}ms.`
+    );
     console.log('='.repeat(60));
     process.exit(0);
   } catch (err) {

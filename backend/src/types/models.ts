@@ -122,11 +122,15 @@ export interface Job {
   company: string;
   description: string;
   requirements: string;
+  responsibilities: string | null;
   location: string;
   salary_min: number | null;
   salary_max: number | null;
   job_type: JobType;
   status: JobStatus;
+  slug: string | null;
+  is_featured: boolean;
+  published_at: Date | null;
   closed_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -140,7 +144,16 @@ export interface Resume {
   file_url: string;
   file_key: string;
   is_default: boolean;
+  file_name: string;
+  storage_path: string;
+  is_active: boolean;
+  file_size: number | null;
+  file_type: string | null;
+  resume_text: string | null;
+  parsed_at: Date | null;
+  resume_title: string;
   created_at: Date;
+  updated_at: Date;
 }
 
 /** Represents a row in the `applications` table. */

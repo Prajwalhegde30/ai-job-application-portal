@@ -1,2 +1,4 @@
-// Profile module — will be implemented in Phase 2
-export {};
+/**
+ * Profile module public exports.
+ */
+export { default as profileRoutes } from './profile.routes';

@@ -77,21 +77,36 @@ CREATE TABLE profiles (
 -- posted_by references the admin who created the listing.
 -- =============================================================================
 CREATE TABLE jobs (
-    id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    posted_by    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title        VARCHAR(255) NOT NULL,
-    company      VARCHAR(255) NOT NULL,
-    description  TEXT NOT NULL,
-    requirements TEXT NOT NULL,
-    location     VARCHAR(255) NOT NULL,
-    salary_min   INT,
-    salary_max   INT,
-    job_type     job_type NOT NULL DEFAULT 'FULL_TIME',
-    status       job_status NOT NULL DEFAULT 'DRAFT',
-    closed_at    TIMESTAMPTZ,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    posted_by        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title            VARCHAR(255) NOT NULL,
+    company          VARCHAR(255) NOT NULL,
+    description      TEXT NOT NULL,
+    requirements     TEXT NOT NULL,
+    responsibilities TEXT,
+    location         VARCHAR(255) NOT NULL,
+    salary_min       INT,
+    salary_max       INT,
+    job_type         job_type NOT NULL DEFAULT 'FULL_TIME',
+    status           job_status NOT NULL DEFAULT 'DRAFT',
+    slug             VARCHAR(500),
+    is_featured      BOOLEAN NOT NULL DEFAULT FALSE,
+    published_at     TIMESTAMPTZ,
+    closed_at        TIMESTAMPTZ,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Job indexes for search and filtering performance
+CREATE UNIQUE INDEX idx_jobs_slug ON jobs (slug) WHERE slug IS NOT NULL;
+CREATE INDEX idx_jobs_title ON jobs (title);
+CREATE INDEX idx_jobs_company ON jobs (company);
+CREATE INDEX idx_jobs_location ON jobs (location);
+CREATE INDEX idx_jobs_status ON jobs (status);
+CREATE INDEX idx_jobs_created_by ON jobs (posted_by);
+CREATE INDEX idx_jobs_job_type ON jobs (job_type);
+CREATE INDEX idx_jobs_is_featured ON jobs (is_featured) WHERE is_featured = TRUE;
+CREATE INDEX idx_jobs_status_created ON jobs (status, created_at DESC);
 
 -- =============================================================================
 -- TABLE: resumes
@@ -99,13 +114,22 @@ CREATE TABLE jobs (
 -- with one marked as default. File storage is external (Supabase/Cloudinary).
 -- =============================================================================
 CREATE TABLE resumes (
-    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name       VARCHAR(255) NOT NULL,
-    file_url   TEXT NOT NULL,
-    file_key   VARCHAR(500) NOT NULL,
-    is_default BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name          VARCHAR(255) NOT NULL,
+    file_url      TEXT NOT NULL,
+    file_key      VARCHAR(500) NOT NULL,
+    is_default    BOOLEAN NOT NULL DEFAULT FALSE,
+    file_name     VARCHAR(255) NOT NULL,
+    storage_path  VARCHAR(500) NOT NULL,
+    is_active     BOOLEAN NOT NULL DEFAULT FALSE,
+    file_size     INT,
+    file_type     VARCHAR(100),
+    resume_text   TEXT,
+    parsed_at     TIMESTAMPTZ,
+    resume_title  VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =============================================================================

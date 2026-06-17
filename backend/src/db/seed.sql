@@ -218,22 +218,22 @@ INSERT INTO jobs (id, posted_by, title, company, description, requirements, loca
 -- RESUMES (for users who will apply)
 -- =============================================================================
 
-INSERT INTO resumes (id, user_id, name, file_url, file_key, is_default) VALUES
+INSERT INTO resumes (id, user_id, name, file_url, file_key, is_default, file_name, storage_path, is_active, file_size, file_type, resume_title) VALUES
 ('d0000001-0000-0000-0000-000000000001', 'b0000001-0000-0000-0000-000000000001',
  'Priya_Sharma_Resume_2026.pdf', 'https://storage.example.com/resumes/priya_2026.pdf',
- 'resumes/b0000001/priya_2026.pdf', TRUE),
+ 'resumes/b0000001/priya_2026.pdf', TRUE, 'Priya_Sharma_Resume_2026.pdf', 'resumes/b0000001/priya_2026.pdf', TRUE, 125000, 'application/pdf', 'Main React Resume'),
 ('d0000002-0000-0000-0000-000000000002', 'b0000002-0000-0000-0000-000000000002',
  'James_Wilson_Resume.pdf', 'https://storage.example.com/resumes/james_2026.pdf',
- 'resumes/b0000002/james_2026.pdf', TRUE),
+ 'resumes/b0000002/james_2026.pdf', TRUE, 'James_Wilson_Resume.pdf', 'resumes/b0000002/james_2026.pdf', TRUE, 98000, 'application/pdf', 'Python/Go Developer Resume'),
 ('d0000003-0000-0000-0000-000000000003', 'b0000003-0000-0000-0000-000000000003',
  'Emily_Zhang_Resume.pdf', 'https://storage.example.com/resumes/emily_2026.pdf',
- 'resumes/b0000003/emily_2026.pdf', TRUE),
+ 'resumes/b0000003/emily_2026.pdf', TRUE, 'Emily_Zhang_Resume.pdf', 'resumes/b0000003/emily_2026.pdf', TRUE, 154000, 'application/pdf', 'Emily Zhang Resume'),
 ('d0000004-0000-0000-0000-000000000004', 'b0000004-0000-0000-0000-000000000004',
  'Carlos_Rivera_Resume.pdf', 'https://storage.example.com/resumes/carlos_2026.pdf',
- 'resumes/b0000004/carlos_2026.pdf', TRUE),
+ 'resumes/b0000004/carlos_2026.pdf', TRUE, 'Carlos_Rivera_Resume.pdf', 'resumes/b0000004/carlos_2026.pdf', TRUE, 87000, 'application/pdf', 'Carlos Rivera Resume'),
 ('d0000005-0000-0000-0000-000000000005', 'b0000005-0000-0000-0000-000000000005',
  'Aisha_Patel_CV.pdf', 'https://storage.example.com/resumes/aisha_2026.pdf',
- 'resumes/b0000005/aisha_2026.pdf', TRUE);
+ 'resumes/b0000005/aisha_2026.pdf', TRUE, 'Aisha_Patel_CV.pdf', 'resumes/b0000005/aisha_2026.pdf', TRUE, 110000, 'application/pdf', 'Aisha Patel CV');
 
 -- =============================================================================
 -- APPLICATIONS (sample applications to published jobs)

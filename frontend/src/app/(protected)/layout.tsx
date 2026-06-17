@@ -45,13 +45,18 @@ export default function ProtectedLayout({
 
   /** Navigation items shown to all authenticated users */
   const commonNav = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Jobs', href: '/jobs', icon: Briefcase, disabled: true },
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: LayoutDashboard,
+      disabled: false,
+    },
+    { name: 'Jobs', href: '/jobs', icon: Briefcase, disabled: false },
   ];
 
   /** Navigation items shown only to ADMIN role */
   const adminNav = [
-    { name: 'My Jobs', href: '/admin/jobs', icon: Settings, disabled: true },
+    { name: 'My Jobs', href: '/admin/jobs', icon: Settings, disabled: false },
     {
       name: 'Applications',
       href: '/admin/applications',
@@ -68,12 +73,12 @@ export default function ProtectedLayout({
       icon: FileText,
       disabled: true,
     },
-    { name: 'Resumes', href: '/resumes', icon: FileText, disabled: true },
+    { name: 'Resumes', href: '/resumes', icon: FileText, disabled: false },
   ];
 
   /** Profile — shown to all roles */
   const profileNav = [
-    { name: 'Profile', href: '/profile', icon: User, disabled: true },
+    { name: 'Profile', href: '/profile', icon: User, disabled: false },
   ];
 
   // Compose navigation based on role
@@ -212,7 +217,7 @@ export default function ProtectedLayout({
               </button>
               <div className="hidden items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-400 sm:flex">
                 <Sparkles className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>Phase 4 Active: RBAC System</span>
+                <span>Phase 6 Active: Job Management</span>
               </div>
             </div>
 
