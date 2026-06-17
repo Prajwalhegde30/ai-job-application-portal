@@ -32,6 +32,15 @@ interface AuthContextType {
   login: (data: LoginFormData) => Promise<void>;
   register: (data: RegisterFormData) => Promise<void>;
   logout: () => Promise<void>;
+  /** True if the authenticated user has the ADMIN role. */
+  isAdmin: boolean;
+  /** True if the authenticated user has the USER role. */
+  isUser: boolean;
+  /**
+   * Check if the current user has one of the specified roles.
+   * @param roles - One or more roles to check against
+   */
+  hasRole: (...roles: ('ADMIN' | 'USER')[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -122,6 +131,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [clearAuth]);
 
+  const isAdmin = user?.role === 'ADMIN';
+  const isUser = user?.role === 'USER';
+
+  /** Role check helper — returns true if user has any of the specified roles. */
+  const hasRole = useCallback(
+    (...roles: ('ADMIN' | 'USER')[]) => {
+      if (!user) return false;
+      return roles.includes(user.role);
+    },
+    [user]
+  );
+
   const value = useMemo(
     () => ({
       user,
@@ -130,8 +151,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      isAdmin,
+      isUser,
+      hasRole,
     }),
-    [user, isAuthenticated, isLoading, login, register, logout]
+    [
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      register,
+      logout,
+      isAdmin,
+      isUser,
+      hasRole,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

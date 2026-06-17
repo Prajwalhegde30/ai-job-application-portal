@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
  * Wraps protected pages — redirects unauthenticated users to /login.
  * Shows a loading spinner while the auth check is in progress.
  *
- * Does NOT check roles — that is Phase 4 (RBAC).
+ * For role-based protection, use RoleGuard (on top of AuthGuard).
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();

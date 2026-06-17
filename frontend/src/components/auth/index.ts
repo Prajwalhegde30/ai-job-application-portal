@@ -1,3 +1,3 @@
-// Auth components — LoginForm, RegisterForm, AuthGuard
-// Will be implemented in Phase 2
-export {};
+// Auth components — AuthGuard, RoleGuard, LoginForm, RegisterForm
+export { AuthGuard } from './AuthGuard';
+export { RoleGuard } from './RoleGuard';

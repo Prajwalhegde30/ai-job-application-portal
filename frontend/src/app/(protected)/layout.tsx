@@ -17,33 +17,71 @@ import {
   Menu,
   X,
   Sparkles,
+  Settings,
+  Users,
+  Shield,
 } from 'lucide-react';
 
 /**
  * Protected Layout
  * Wraps dashboard and other protected sections in AuthGuard.
- * Renders a premium responsive sidebar layout with a global header.
+ * Renders a role-aware responsive sidebar layout with a global header.
+ *
+ * Navigation is role-filtered:
+ *   - USER sees: Dashboard, Jobs, Applications, Resumes, Profile
+ *   - ADMIN sees: Dashboard, Jobs, My Jobs (admin), Applicants, Profile
+ *
+ * NOTE: Client-side navigation filtering is a UX convenience only.
+ * Backend requireRole() enforces authorization on all API routes.
  */
 export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isUser } = useAuth();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const navigation = [
+  /** Navigation items shown to all authenticated users */
+  const commonNav = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Jobs', href: '/jobs', icon: Briefcase, disabled: true },
+  ];
+
+  /** Navigation items shown only to ADMIN role */
+  const adminNav = [
+    { name: 'My Jobs', href: '/admin/jobs', icon: Settings, disabled: true },
     {
       name: 'Applications',
+      href: '/admin/applications',
+      icon: Users,
+      disabled: true,
+    },
+  ];
+
+  /** Navigation items shown only to USER role */
+  const userNav = [
+    {
+      name: 'My Applications',
       href: '/applications',
       icon: FileText,
       disabled: true,
     },
     { name: 'Resumes', href: '/resumes', icon: FileText, disabled: true },
+  ];
+
+  /** Profile — shown to all roles */
+  const profileNav = [
     { name: 'Profile', href: '/profile', icon: User, disabled: true },
+  ];
+
+  // Compose navigation based on role
+  const navigation = [
+    ...commonNav,
+    ...(isAdmin ? adminNav : []),
+    ...(isUser ? userNav : []),
+    ...profileNav,
   ];
 
   const handleLogout = async () => {
@@ -85,8 +123,22 @@ export default function ProtectedLayout({
             </button>
           </div>
 
+          {/* Role Badge */}
+          <div className="px-6 pt-4">
+            <div
+              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                isAdmin
+                  ? 'border border-violet-800/50 bg-violet-950/60 text-violet-300'
+                  : 'border border-blue-800/50 bg-blue-950/60 text-blue-300'
+              }`}
+            >
+              <Shield className="h-3.5 w-3.5" />
+              <span>{isAdmin ? 'Admin' : 'Job Seeker'}</span>
+            </div>
+          </div>
+
           {/* Navigation Links */}
-          <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-6">
+          <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -160,7 +212,7 @@ export default function ProtectedLayout({
               </button>
               <div className="hidden items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-400 sm:flex">
                 <Sparkles className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>Phase 3 Active: Production Auth System</span>
+                <span>Phase 4 Active: RBAC System</span>
               </div>
             </div>
 
@@ -176,7 +228,9 @@ export default function ProtectedLayout({
               <div className="flex items-center gap-3">
                 <span className="hidden text-xs text-slate-400 md:inline-block">
                   Role:{' '}
-                  <span className="font-semibold text-blue-400">
+                  <span
+                    className={`font-semibold ${isAdmin ? 'text-violet-400' : 'text-blue-400'}`}
+                  >
                     {user?.role || 'USER'}
                   </span>
                 </span>

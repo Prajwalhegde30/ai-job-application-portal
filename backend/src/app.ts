@@ -7,6 +7,7 @@ import { env } from './config/env';
 import { errorMiddleware } from './middleware/error.middleware';
 import { authRateLimit } from './middleware/rateLimit.middleware';
 import { authRoutes } from './modules/auth';
+import { rbacTestRoutes } from './modules/rbac-test';
 import { sendSuccess } from './utils/response';
 
 const app = express();
@@ -51,6 +52,7 @@ app.get('/api/v1/health', (_req, res) => {
 // API Routes
 // ---------------------
 app.use('/api/v1/auth', authRateLimit, authRoutes);
+app.use('/api/v1/rbac-test', rbacTestRoutes);
 // app.use('/api/v1/profile', profileRoutes);
 // app.use('/api/v1/jobs', jobRoutes);
 // app.use('/api/v1/applications', applicationRoutes);
