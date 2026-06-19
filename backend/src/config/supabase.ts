@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 import { env } from './env';
 import { logger } from '../utils/logger';
 
@@ -12,6 +13,10 @@ export const supabase =
     ? createClient(supabaseUrl, supabaseServiceKey, {
         auth: {
           persistSession: false,
+        },
+        realtime: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          transport: WebSocket as any,
         },
       })
     : null;
