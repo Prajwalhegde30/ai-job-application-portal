@@ -10,6 +10,11 @@ import { authRoutes } from './modules/auth';
 import { profileRoutes } from './modules/profile';
 import { jobsRoutes } from './modules/jobs';
 import { resumesRoutes } from './modules/resumes';
+import {
+  applicationRoutes,
+  adminApplicationRoutes,
+} from './modules/applications';
+import { notificationsRoutes } from './modules/notifications';
 import { rbacTestRoutes } from './modules/rbac-test';
 import { sendSuccess } from './utils/response';
 
@@ -59,10 +64,11 @@ app.use('/api/v1/rbac-test', rbacTestRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/jobs', jobsRoutes);
 app.use('/api/v1/resumes', resumesRoutes);
-// app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/admin/applications', adminApplicationRoutes);
+app.use('/api/v1/notifications', notificationsRoutes);
 // app.use('/api/v1/ai', aiRoutes);
 // app.use('/api/v1/dashboard', dashboardRoutes);
-// app.use('/api/v1/notifications', notificationRoutes);
 
 // ---------------------
 // 404 Handler

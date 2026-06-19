@@ -27,4 +27,5 @@ export enum ApplicationStatus {
   SHORTLISTED = 'SHORTLISTED',
   REJECTED = 'REJECTED',
   HIRED = 'HIRED',
+  WITHDRAWN = 'WITHDRAWN',
 }

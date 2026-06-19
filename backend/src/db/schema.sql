@@ -27,10 +27,25 @@ CREATE TYPE application_status AS ENUM (
   'REVIEWING',
   'SHORTLISTED',
   'REJECTED',
-  'HIRED'
+  'HIRED',
+  'WITHDRAWN'
 );
 
+CREATE TYPE event_actor_type AS ENUM ('USER', 'ADMIN', 'SYSTEM');
+
 CREATE TYPE analysis_type AS ENUM ('RESUME_EXTRACT', 'MATCH_SCORE');
+
+CREATE TYPE notification_type AS ENUM (
+  'APPLICATION_CREATED',
+  'APPLICATION_WITHDRAWN',
+  'APPLICATION_REVIEWING',
+  'APPLICATION_SHORTLISTED',
+  'APPLICATION_REJECTED',
+  'APPLICATION_HIRED',
+  'JOB_PUBLISHED',
+  'SYSTEM'
+);
+
 
 -- =============================================================================
 -- TABLE: users
@@ -135,19 +150,43 @@ CREATE TABLE resumes (
 -- =============================================================================
 -- TABLE: applications
 -- Links a user to a job via a resume. Unique constraint prevents duplicate
--- applications. Status lifecycle: PENDING → REVIEWING → SHORTLISTED → REJECTED | HIRED.
+-- applications. Status lifecycle: PENDING → REVIEWING → SHORTLISTED → REJECTED | HIRED | WITHDRAWN.
+-- Snapshot columns capture resume state at application time.
 -- =============================================================================
 CREATE TABLE applications (
-    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    job_id         UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-    user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    resume_id      UUID NOT NULL REFERENCES resumes(id),
-    cover_letter   TEXT,
-    status         application_status NOT NULL DEFAULT 'PENDING',
-    ai_match_score INT,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id                           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    job_id                       UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    user_id                      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    resume_id                    UUID NOT NULL REFERENCES resumes(id),
+    cover_letter                 TEXT,
+    status                       application_status NOT NULL DEFAULT 'PENDING',
+    ai_match_score               INT,
+    resume_snapshot_title        VARCHAR(255),
+    resume_snapshot_file_name    VARCHAR(255),
+    resume_snapshot_storage_path VARCHAR(500),
+    reviewed_at                  TIMESTAMPTZ,
+    reviewed_by                  UUID REFERENCES users(id) ON DELETE SET NULL,
+    notes                        TEXT,
+    applied_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_application UNIQUE (job_id, user_id)
+);
+
+-- =============================================================================
+-- TABLE: application_timeline
+-- Chronological history of all application status changes and events.
+-- =============================================================================
+CREATE TABLE application_timeline (
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    application_id UUID NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    event_type     VARCHAR(100) NOT NULL,
+    old_status     VARCHAR(50),
+    new_status     VARCHAR(50),
+    notes          TEXT,
+    performed_by   UUID REFERENCES users(id) ON DELETE SET NULL,
+    actor_type     event_actor_type NOT NULL DEFAULT 'SYSTEM',
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =============================================================================
@@ -173,6 +212,7 @@ CREATE TABLE ai_analysis (
 CREATE TABLE notifications (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type       notification_type NOT NULL DEFAULT 'SYSTEM',
     title      VARCHAR(255) NOT NULL,
     message    TEXT NOT NULL,
     is_read    BOOLEAN NOT NULL DEFAULT FALSE,

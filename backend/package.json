@@ -15,6 +15,8 @@
     "test:profile": "ts-node-dev --transpile-only src/db/test-profile-flows.ts",
     "test:jobs": "ts-node-dev --transpile-only src/db/test-job-flows.ts",
     "test:resumes": "ts-node-dev --transpile-only src/db/test-resume-flows.ts",
+    "test:applications": "ts-node-dev --transpile-only src/db/test-application-flows.ts",
+    "test:notifications": "ts-node-dev --transpile-only src/db/test-notification-flows.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",

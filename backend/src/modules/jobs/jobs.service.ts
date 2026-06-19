@@ -8,6 +8,8 @@ import {
   PaginatedResult,
 } from './jobs.types';
 import { CreateJobInput, UpdateJobInput } from './jobs.validators';
+import { eventBus } from '../../core/events/eventBus';
+import { EventType } from '../../core/events/eventTypes';
 
 /**
  * Generate a URL-friendly slug from job title and location.
@@ -90,7 +92,9 @@ export async function createJob(
       `UPDATE jobs SET published_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING *`,
       [job.id]
     );
-    return updated.rows[0];
+    const published = updated.rows[0];
+    eventBus.publish(EventType.JOB_PUBLISHED, { jobId: published.id });
+    return published;
   }
 
   return job;
@@ -243,7 +247,9 @@ export async function publishJob(
     [jobId]
   );
 
-  return result.rows[0];
+  const published = result.rows[0];
+  eventBus.publish(EventType.JOB_PUBLISHED, { jobId: published.id });
+  return published;
 }
 
 // =============================================================================

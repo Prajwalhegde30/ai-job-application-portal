@@ -33,6 +33,13 @@ export enum ApplicationStatus {
   SHORTLISTED = 'SHORTLISTED',
   REJECTED = 'REJECTED',
   HIRED = 'HIRED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum EventActorType {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  SYSTEM = 'SYSTEM',
 }
 
 export enum AnalysisType {
@@ -165,8 +172,28 @@ export interface Application {
   cover_letter: string | null;
   status: ApplicationStatus;
   ai_match_score: number | null;
+  resume_snapshot_title: string | null;
+  resume_snapshot_file_name: string | null;
+  resume_snapshot_storage_path: string | null;
+  reviewed_at: Date | null;
+  reviewed_by: string | null;
+  notes: string | null;
+  applied_at: Date;
   created_at: Date;
   updated_at: Date;
+}
+
+/** Represents a row in the `application_timeline` table. */
+export interface ApplicationTimelineEvent {
+  id: string;
+  application_id: string;
+  event_type: string;
+  old_status: string | null;
+  new_status: string | null;
+  notes: string | null;
+  performed_by: string | null;
+  actor_type: EventActorType;
+  created_at: Date;
 }
 
 /** Represents a row in the `ai_analysis` table. */

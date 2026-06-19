@@ -74,8 +74,28 @@ export interface Application {
   coverLetter: string | null;
   status: string;
   aiMatchScore: number | null;
+  resumeSnapshotTitle: string | null;
+  resumeSnapshotFileName: string | null;
+  resumeSnapshotStoragePath: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  notes: string | null;
+  appliedAt: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  applicationId: string;
+  eventType: string;
+  oldStatus: string | null;
+  newStatus: string | null;
+  notes: string | null;
+  performedBy: string | null;
+  actorType: string;
+  performerName: string | null;
+  createdAt: string;
 }
 
 export interface Resume {

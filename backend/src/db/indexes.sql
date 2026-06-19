@@ -35,6 +35,26 @@ CREATE INDEX IF NOT EXISTS idx_applications_user_id ON applications(user_id);
 -- Used on: GET /api/v1/applications/job/:jobId?status=PENDING
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 
+-- Look up applications reviewed by a specific admin.
+-- Used on: Admin review audit trail
+CREATE INDEX IF NOT EXISTS idx_applications_reviewed_by ON applications(reviewed_by);
+
+-- Sort applications by applied_at for analytics and metrics.
+-- Used on: Hiring pipeline reports
+CREATE INDEX IF NOT EXISTS idx_applications_applied_at ON applications(applied_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- APPLICATION TIMELINE INDEXES
+-- ---------------------------------------------------------------------------
+
+-- Look up all timeline events for a specific application.
+-- Used on: GET /api/v1/applications/:id/timeline
+CREATE INDEX IF NOT EXISTS idx_application_timeline_app_id ON application_timeline(application_id);
+
+-- Chronological ordering of timeline events per application.
+-- Used on: Timeline display (sorted by created_at)
+CREATE INDEX IF NOT EXISTS idx_application_timeline_created ON application_timeline(application_id, created_at ASC);
+
 -- ---------------------------------------------------------------------------
 -- RESUMES INDEXES
 -- ---------------------------------------------------------------------------
@@ -66,6 +86,10 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 -- Filter unread notifications efficiently.
 -- Used on: GET /api/v1/notifications?unreadOnly=true
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+
+-- Sort notifications chronologically (newest first).
+-- Used on: GET /api/v1/notifications
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- REFRESH TOKENS INDEXES

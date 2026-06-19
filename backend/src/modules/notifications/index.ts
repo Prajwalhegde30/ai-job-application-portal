@@ -1,2 +1,6 @@
-// Notifications module — will be implemented in Phase 7
-export {};
+import { registerNotificationHandlers } from './notifications.handlers';
+
+// Bootstrap: wire up subscribers on EventBus when module is imported
+registerNotificationHandlers();
+
+export { notificationsRoutes } from './notifications.routes';

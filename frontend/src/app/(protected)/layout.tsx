@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadCount } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -42,6 +43,7 @@ export default function ProtectedLayout({
   const { user, logout, isAdmin, isUser } = useAuth();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { data: unreadCount = 0 } = useUnreadCount({ refetchInterval: 30000 });
 
   /** Navigation items shown to all authenticated users */
   const commonNav = [
@@ -61,7 +63,7 @@ export default function ProtectedLayout({
       name: 'Applications',
       href: '/admin/applications',
       icon: Users,
-      disabled: true,
+      disabled: false,
     },
   ];
 
@@ -71,7 +73,7 @@ export default function ProtectedLayout({
       name: 'My Applications',
       href: '/applications',
       icon: FileText,
-      disabled: true,
+      disabled: false,
     },
     { name: 'Resumes', href: '/resumes', icon: FileText, disabled: false },
   ];
@@ -217,16 +219,24 @@ export default function ProtectedLayout({
               </button>
               <div className="hidden items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-400 sm:flex">
                 <Sparkles className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>Phase 6 Active: Job Management</span>
+                <span>Phase 9 Active: Notification System</span>
               </div>
             </div>
 
             {/* Header Actions */}
             <div className="flex items-center gap-4">
-              <button className="relative rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
+              <Link
+                href="/notifications"
+                className="relative rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                aria-label="View notifications"
+              >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-              </button>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white ring-1 ring-slate-950">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Link>
 
               <div className="h-6 w-px bg-slate-800" />
 

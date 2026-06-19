@@ -1,8 +1,11 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { useJob } from '@/hooks/useJobs';
+import { useResumes } from '@/hooks/useResumes';
+import { useApplyToJob, useCheckApplication } from '@/hooks/useApplications';
+import { useAuth } from '@/hooks/useAuth';
 import { JOB_TYPE_LABELS } from '@/lib/validators/job';
 import type { JobType } from '@/lib/validators/job';
 import { Button } from '@/components/ui/button';
@@ -18,12 +21,18 @@ import {
   FileText,
   CheckCircle2,
   ListChecks,
+  Send,
+  Check,
+  Loader2,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 
 /**
  * Job Detail Page
  * Displays full job information including description, requirements,
- * responsibilities, and metadata. Includes Apply Now CTA (wired in future phase).
+ * responsibilities, and metadata. Includes functional Apply Now flow
+ * with resume selection and cover letter.
  */
 export default function JobDetailPage({
   params,
@@ -32,6 +41,7 @@ export default function JobDetailPage({
 }) {
   const { jobId } = use(params);
   const { data: job, isLoading, isError } = useJob(jobId);
+  const { isUser } = useAuth();
 
   if (isLoading) {
     return (
@@ -142,20 +152,12 @@ export default function JobDetailPage({
           </div>
         </div>
 
-        {/* Apply CTA */}
-        <div className="mt-6 flex items-center gap-4 border-t border-slate-800/50 pt-6">
-          <Button
-            id="apply-now-button"
-            className="bg-gradient-to-r from-blue-600 to-violet-600 px-8 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-violet-500"
-            disabled
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Apply Now
-          </Button>
-          <span className="text-[11px] text-slate-500">
-            Application system coming in next phase
-          </span>
-        </div>
+        {/* Apply CTA — Only for USER role */}
+        {isUser && (
+          <div className="mt-6 border-t border-slate-800/50 pt-6">
+            <ApplySection jobId={job.id} />
+          </div>
+        )}
       </div>
 
       {/* Content Sections */}
@@ -226,6 +228,220 @@ export default function JobDetailPage({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Apply Section Component
+// =============================================================================
+
+function ApplySection({ jobId }: { jobId: string }) {
+  const { data: resumes, isLoading: resumesLoading } = useResumes();
+  const { data: checkData, isLoading: checkLoading } =
+    useCheckApplication(jobId);
+  const applyMutation = useApplyToJob();
+
+  const [showForm, setShowForm] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState('');
+  const [coverLetter, setCoverLetter] = useState('');
+  const [showResumeDropdown, setShowResumeDropdown] = useState(false);
+  const [applied, setApplied] = useState(false);
+
+  const hasApplied = checkData?.hasApplied || applied;
+
+  if (checkLoading) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-40 animate-pulse rounded-lg bg-slate-800" />
+      </div>
+    );
+  }
+
+  if (hasApplied) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-4 py-2.5 text-sm font-medium text-emerald-400">
+          <Check className="h-4 w-4" />
+          Application Submitted
+        </div>
+        <Link
+          href="/applications"
+          className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+        >
+          View my applications →
+        </Link>
+      </div>
+    );
+  }
+
+  if (!showForm) {
+    return (
+      <Button
+        id="apply-now-button"
+        onClick={() => setShowForm(true)}
+        className="bg-gradient-to-r from-blue-600 to-violet-600 px-8 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-violet-500"
+      >
+        <FileText className="mr-2 h-4 w-4" />
+        Apply Now
+      </Button>
+    );
+  }
+
+  const selectedResume = resumes?.find((r) => r.id === selectedResumeId);
+
+  const handleSubmit = async () => {
+    if (!selectedResumeId) return;
+    try {
+      await applyMutation.mutateAsync({
+        jobId,
+        resumeId: selectedResumeId,
+        coverLetter: coverLetter.trim() || null,
+      });
+      setApplied(true);
+      setShowForm(false);
+    } catch {
+      // Error handled by mutation state
+    }
+  };
+
+  return (
+    <div className="space-y-4 rounded-xl border border-slate-700/50 bg-slate-800/30 p-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-white">
+          Apply to this position
+        </h3>
+        <button
+          onClick={() => setShowForm(false)}
+          className="rounded p-1 text-slate-400 hover:bg-slate-700 hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Resume Selector */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium text-slate-400">
+          Select Resume <span className="text-red-400">*</span>
+        </label>
+        {resumesLoading ? (
+          <div className="h-10 animate-pulse rounded-lg bg-slate-700" />
+        ) : !resumes || resumes.length === 0 ? (
+          <div className="rounded-lg border border-amber-800/50 bg-amber-950/30 px-3 py-2 text-xs text-amber-400">
+            No resumes uploaded.{' '}
+            <Link href="/resumes" className="underline hover:text-amber-300">
+              Upload a resume
+            </Link>{' '}
+            first.
+          </div>
+        ) : (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowResumeDropdown(!showResumeDropdown)}
+              className="flex w-full items-center justify-between rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2.5 text-sm text-slate-200 transition-colors hover:border-slate-600"
+            >
+              <span
+                className={selectedResume ? 'text-white' : 'text-slate-500'}
+              >
+                {selectedResume
+                  ? `${selectedResume.resumeTitle} (${selectedResume.fileName})`
+                  : 'Choose a resume...'}
+              </span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </button>
+
+            {showResumeDropdown && (
+              <div className="absolute top-full z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 shadow-xl">
+                {resumes.map((resume) => (
+                  <button
+                    key={resume.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedResumeId(resume.id);
+                      setShowResumeDropdown(false);
+                    }}
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-700/50 ${
+                      resume.id === selectedResumeId
+                        ? 'bg-blue-600/10 text-blue-400'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    <FileText className="h-4 w-4 shrink-0 text-slate-500" />
+                    <div className="flex-1 overflow-hidden">
+                      <p className="truncate font-medium">
+                        {resume.resumeTitle}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">
+                        {resume.fileName}
+                        {resume.isActive && (
+                          <span className="ml-2 text-emerald-400">
+                            ● Active
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    {resume.id === selectedResumeId && (
+                      <Check className="h-4 w-4 text-blue-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Cover Letter */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium text-slate-400">
+          Cover Letter{' '}
+          <span className="font-normal text-slate-500">(optional)</span>
+        </label>
+        <textarea
+          value={coverLetter}
+          onChange={(e) => setCoverLetter(e.target.value)}
+          rows={4}
+          maxLength={5000}
+          placeholder="Tell the recruiter why you're a great fit..."
+          className="w-full resize-none rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+        />
+        <p className="text-right text-[11px] text-slate-500">
+          {coverLetter.length}/5000
+        </p>
+      </div>
+
+      {/* Error message */}
+      {applyMutation.isError && (
+        <div className="rounded-lg border border-red-800/50 bg-red-950/30 px-3 py-2 text-xs text-red-400">
+          {(
+            applyMutation.error as {
+              response?: { data?: { error?: { message?: string } } };
+            }
+          )?.response?.data?.error?.message ||
+            'Failed to submit application. Please try again.'}
+        </div>
+      )}
+
+      {/* Submit */}
+      <Button
+        id="submit-application-button"
+        onClick={handleSubmit}
+        disabled={!selectedResumeId || applyMutation.isPending}
+        className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-violet-500 disabled:opacity-50"
+      >
+        {applyMutation.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          <>
+            <Send className="mr-2 h-4 w-4" />
+            Submit Application
+          </>
+        )}
+      </Button>
     </div>
   );
 }
