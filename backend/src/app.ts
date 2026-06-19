@@ -18,6 +18,7 @@ import { notificationsRoutes } from './modules/notifications';
 import { analyticsRoutes } from './modules/analytics';
 import { candidateDashboardRoutes } from './modules/candidate-dashboard';
 import { rbacTestRoutes } from './modules/rbac-test';
+import { aiAnalysisRoutes } from './modules/ai-analysis';
 import { sendSuccess } from './utils/response';
 
 const app = express();
@@ -70,7 +71,7 @@ app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/admin/applications', adminApplicationRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
-// app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/ai-analysis', aiAnalysisRoutes);
 app.use('/api/v1/dashboard', candidateDashboardRoutes);
 
 // ---------------------

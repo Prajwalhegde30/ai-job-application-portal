@@ -196,14 +196,57 @@ export interface ApplicationTimelineEvent {
   created_at: Date;
 }
 
+export interface ExtractedSkill {
+  name: string;
+  category: 'Language' | 'Framework' | 'Database' | 'Cloud' | 'Tool' | 'Other';
+}
+
+export interface ExtractedEducation {
+  degree?: string;
+  university?: string;
+  graduationYear?: number;
+  gpa?: number;
+}
+
+export interface ExtractedExperience {
+  company?: string;
+  role?: string;
+  duration?: string;
+  achievements?: string[];
+}
+
+export interface ExtractedProject {
+  projectName?: string;
+  techStack?: string[];
+  description?: string;
+  githubLink?: string;
+}
+
+export interface ExtractedCertification {
+  name: string;
+  provider?: string;
+  date?: string;
+}
+
 /** Represents a row in the `ai_analysis` table. */
 export interface AIAnalysis {
   id: string;
   resume_id: string;
+  user_id: string;
   job_id: string | null;
   analysis_type: AnalysisType;
   result: ResumeExtractResult | MatchScoreResult;
+  score: number | null;
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
+  extracted_skills: ExtractedSkill[];
+  extracted_education: ExtractedEducation[];
+  extracted_experience: ExtractedExperience[];
+  extracted_projects: ExtractedProject[];
+  extracted_certifications: ExtractedCertification[];
   created_at: Date;
+  updated_at: Date;
 }
 
 /** Represents a row in the `notifications` table. */

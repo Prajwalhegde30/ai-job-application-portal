@@ -19,6 +19,7 @@
     "test:notifications": "ts-node-dev --transpile-only src/db/test-notification-flows.ts",
     "test:analytics": "ts-node-dev --transpile-only src/db/test-analytics-flows.ts",
     "test:dashboard": "ts-node-dev --transpile-only src/db/test-candidate-dashboard-flows.ts",
+    "test:ai-analysis": "ts-node-dev --transpile-only src/db/test-ai-analysis-flows.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",
@@ -45,6 +46,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
@@ -59,6 +61,7 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.1.0",
     "@types/node": "^25.9.3",
+    "@types/pdf-parse": "^1.1.5",
     "@types/pg": "^8.20.0",
     "@typescript-eslint/eslint-plugin": "^8.61.1",
     "@typescript-eslint/parser": "^8.61.1",

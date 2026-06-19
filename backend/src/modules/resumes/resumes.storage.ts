@@ -122,3 +122,32 @@ export async function getSignedUrl(
 
   return data.signedUrl;
 }
+
+/**
+ * Download a file from storage and return its buffer.
+ */
+export async function downloadFile(storagePath: string): Promise<Buffer> {
+  if (env.NODE_ENV === 'test' || !supabase) {
+    const fullPath = path.join(MOCK_STORAGE_DIR, storagePath);
+    if (!fs.existsSync(fullPath)) {
+      throw new AppError('File not found in storage', 404, 'FILE_NOT_FOUND');
+    }
+    return fs.readFileSync(fullPath);
+  }
+
+  const { data, error } = await supabase.storage
+    .from(env.SUPABASE_BUCKET)
+    .download(storagePath);
+
+  if (error) {
+    logger.error('Supabase download error:', error);
+    throw new AppError(
+      `File download failed: ${error.message}`,
+      500,
+      'STORAGE_DOWNLOAD_ERROR'
+    );
+  }
+
+  const arrayBuffer = await data.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}

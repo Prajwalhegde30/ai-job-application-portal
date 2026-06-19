@@ -3,6 +3,8 @@ import { AppError } from '../../utils/appError';
 import { ResumeRow } from './resumes.types';
 import * as storageService from './resumes.storage';
 import { logger } from '../../utils/logger';
+import { eventBus } from '../../core/events/eventBus';
+import { EventType } from '../../core/events/eventTypes';
 
 // Helper to generate a unique storage path for a user
 function getStoragePath(userId: string, originalName: string): string {
@@ -65,7 +67,13 @@ export async function uploadResume(
     ]
   );
 
-  return insertRes.rows[0];
+  const inserted = insertRes.rows[0];
+  eventBus.publish(EventType.RESUME_UPLOADED, {
+    resumeId: inserted.id,
+    userId: inserted.user_id,
+  });
+
+  return inserted;
 }
 
 // =============================================================================
@@ -250,12 +258,12 @@ export async function replaceResume(
     fileType
   );
 
-  // 3. Update database record in transaction
+  // 3. Update database record in transaction (setting resume_text and parsed_at to NULL to trigger re-analysis)
   const result = await query<ResumeRow>(
     `UPDATE resumes 
      SET name = $1, file_url = $2, file_key = $3,
          file_name = $4, storage_path = $5, file_size = $6, file_type = $7,
-         resume_title = $8, updated_at = NOW()
+         resume_title = $8, resume_text = NULL, parsed_at = NULL, updated_at = NOW()
      WHERE id = $9 AND user_id = $10
      RETURNING *`,
     [
@@ -282,5 +290,11 @@ export async function replaceResume(
     );
   }
 
-  return result.rows[0];
+  const updated = result.rows[0];
+  eventBus.publish(EventType.RESUME_REPLACED, {
+    resumeId: updated.id,
+    userId: updated.user_id,
+  });
+
+  return updated;
 }
