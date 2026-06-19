@@ -40,6 +40,19 @@ async function startServer(): Promise<void> {
 
     process.on('SIGTERM', () => shutdown('SIGTERM'));
     process.on('SIGINT', () => shutdown('SIGINT'));
+
+    process.on('unhandledRejection', (reason: unknown) => {
+      logger.error(
+        '🔥 Unhandled Promise Rejection:',
+        reason instanceof Error ? reason : new Error(String(reason))
+      );
+    });
+
+    process.on('uncaughtException', (err: Error) => {
+      logger.error('🔥 Uncaught Exception:', err);
+      // Exit process to let orchestrator (Railway / Docker) restart it in a clean state
+      process.exit(1);
+    });
   } catch (err) {
     logger.error('❌ Failed to start server:', err);
     process.exit(1);

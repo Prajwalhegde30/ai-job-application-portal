@@ -272,6 +272,25 @@ export interface MatchAnalysis {
   updated_at: Date;
 }
 
+/** Represents a row in the `career_advice` table. */
+export interface CareerAdvice {
+  id: string;
+  application_id: string;
+  user_id: string;
+  resume_id: string;
+  job_id: string;
+  provider: string;
+  career_paths: unknown;
+  skill_recommendations: unknown;
+  project_suggestions: unknown;
+  interview_tips: unknown;
+  salary_insights: unknown;
+  overall_summary: string;
+  confidence_score: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 /** Represents a row in the `notifications` table. */
 export interface Notification {
   id: string;

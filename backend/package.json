@@ -21,11 +21,12 @@
     "test:dashboard": "ts-node-dev --transpile-only src/db/test-candidate-dashboard-flows.ts",
     "test:ai-analysis": "ts-node-dev --transpile-only src/db/test-ai-analysis-flows.ts",
     "test:match-engine": "ts-node-dev --transpile-only src/db/test-match-engine-flows.ts",
+    "test:career-advisor": "ts-node-dev --transpile-only src/db/test-career-advisor-flows.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",
     "format:check": "prettier --check \"src/**/*.ts\" server.ts",
-    "test": "echo \"Tests will be added in Phase 8\""
+    "test": "ts-node-dev --transpile-only src/db/run-all-tests.ts"
   },
   "keywords": [
     "job-portal",
@@ -50,7 +51,9 @@
     "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
     "winston": "^3.19.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "openai": "^4.73.0",
+    "@google/generative-ai": "^0.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

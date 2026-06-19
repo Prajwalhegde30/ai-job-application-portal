@@ -1,6 +1,7 @@
 import { query, getClient } from '../../config/database';
 import { AppError } from '../../utils/appError';
 import { logger } from '../../utils/logger';
+import { metricsService } from '../../core/metrics/metrics.service';
 import {
   NotificationRow,
   NotificationType,
@@ -93,6 +94,7 @@ export async function sendNotification(
   },
   enabledChannels: NotificationChannelType[] = [NotificationChannelType.IN_APP]
 ): Promise<void> {
+  metricsService.incrementNotificationCount();
   for (const channelType of enabledChannels) {
     try {
       const channel = notificationChannels[channelType];

@@ -7,7 +7,9 @@ import {
   useApplicationTimeline,
 } from '@/hooks/useApplications';
 import { useGetMatchAnalysis } from '@/hooks/useMatchAnalysis';
+import { useGetCareerAdvice } from '@/hooks/useCareerAdvice';
 import { MatchScorecard } from '@/components/analysis';
+import { CareerAdvisorCard } from '@/components/ai';
 import { useAuth } from '@/hooks/useAuth';
 import { APPLICATION_STATUS_CONFIG } from '@/lib/validators/application';
 import type { TimelineEventResponse } from '@/lib/validators/application';
@@ -46,6 +48,8 @@ export default function ApplicationDetailPage({
   const { data: timeline } = useApplicationTimeline(applicationId);
   const { data: matchReport, isLoading: isMatchLoading } =
     useGetMatchAnalysis(applicationId);
+  const { data: careerAdvice, isLoading: isAdviceLoading } =
+    useGetCareerAdvice(applicationId);
 
   if (isLoading) {
     return (
@@ -154,6 +158,13 @@ export default function ApplicationDetailPage({
         <div className="h-48 animate-pulse rounded-xl border border-slate-800 bg-slate-900/30 p-8" />
       ) : matchReport ? (
         <MatchScorecard report={matchReport} isAdminView={isAdmin} />
+      ) : null}
+
+      {/* Career Advisor */}
+      {isAdviceLoading ? (
+        <div className="h-48 animate-pulse rounded-xl border border-slate-800 bg-slate-900/30 p-8" />
+      ) : careerAdvice ? (
+        <CareerAdvisorCard report={careerAdvice} />
       ) : null}
 
       <div className="grid gap-8 lg:grid-cols-3">

@@ -36,6 +36,7 @@ const upload = multer({
 /**
  * Middleware wrapper for Multer upload.
  * Catches file size and validation errors, returning structured responses.
+ * Also performs a binary signature (magic bytes) check to confirm it is a genuine PDF.
  */
 export function handleFileUpload(
   req: Request,
@@ -60,6 +61,26 @@ export function handleFileUpload(
       }
       return sendError(res, 400, 'UPLOAD_ERROR', (err as Error).message);
     }
+
+    // 3. Binary signature (magic bytes) validation
+    if (req.file) {
+      const buffer = req.file.buffer;
+      if (
+        buffer.length < 4 ||
+        buffer[0] !== 0x25 || // %
+        buffer[1] !== 0x50 || // P
+        buffer[2] !== 0x44 || // D
+        buffer[3] !== 0x46 // F
+      ) {
+        return sendError(
+          res,
+          400,
+          'INVALID_FILE_SIGNATURE',
+          'Only genuine PDF files are allowed'
+        );
+      }
+    }
+
     next();
   });
 }

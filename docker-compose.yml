@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/neondb
+      - JWT_ACCESS_SECRET=some-secure-development-jwt-access-token-secret-value
+      - JWT_REFRESH_SECRET=some-secure-development-jwt-refresh-token-secret-value
+      - AI_PROVIDER=mock
+      - SUPABASE_URL=https://placeholder.supabase.co
+      - SUPABASE_SERVICE_KEY=placeholder-key
+      - SUPABASE_BUCKET=resumes
+      - FRONTEND_URL=http://localhost:3000
+      - BACKEND_URL=http://localhost:8080
+    restart: always
+
+  # Next.js Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+    depends_on:
+      - backend
+    restart: always
+
+  # Optional local postgres DB for local container environments
+  postgres:
+    image: postgres:15-alpine
+    container_name: local-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=neondb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    profiles:
+      - db-local
+
+volumes:
+  postgres_data:

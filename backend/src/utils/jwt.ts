@@ -14,12 +14,12 @@ export interface TokenPayload {
 
 /**
  * Sign a JWT access token with a 15-minute expiry.
- * Uses HS256 with the JWT_SECRET environment variable.
+ * Uses HS256 with the JWT_ACCESS_SECRET environment variable.
  * @param payload - User data to encode (userId, email, role)
  * @returns Signed JWT string
  */
 export function signAccessToken(payload: TokenPayload): string {
-  return jwt.sign(payload, env.JWT_SECRET, {
+  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
     expiresIn: '15m',
     algorithm: 'HS256',
   });
@@ -32,7 +32,7 @@ export function signAccessToken(payload: TokenPayload): string {
  * @throws JsonWebTokenError if token is invalid or expired
  */
 export function verifyAccessToken(token: string): TokenPayload {
-  return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
+  return jwt.verify(token, env.JWT_ACCESS_SECRET) as TokenPayload;
 }
 
 /**

@@ -31,3 +31,7 @@ npm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Local Mock Storage
+storage_mock/
+backend/storage_mock/
