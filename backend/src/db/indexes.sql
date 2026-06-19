@@ -15,6 +15,11 @@ CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 -- Used on: GET /api/v1/jobs/mine
 CREATE INDEX IF NOT EXISTS idx_jobs_posted_by ON jobs(posted_by);
 
+-- Recruiter analytics aggregate jobs by owner, status, and creation date.
+-- Used on: GET /api/v1/analytics/summary, /analytics/top-jobs
+CREATE INDEX IF NOT EXISTS idx_jobs_posted_by_status_created
+    ON jobs(posted_by, status, created_at DESC);
+
 -- Sort jobs by newest first for listing pages.
 -- Used on: GET /api/v1/jobs (default sort order)
 CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC);
@@ -42,6 +47,16 @@ CREATE INDEX IF NOT EXISTS idx_applications_reviewed_by ON applications(reviewed
 -- Sort applications by applied_at for analytics and metrics.
 -- Used on: Hiring pipeline reports
 CREATE INDEX IF NOT EXISTS idx_applications_applied_at ON applications(applied_at DESC);
+
+-- Recruiter analytics count applications by job/status/date.
+-- Used on: /api/v1/analytics/hiring-funnel, /top-jobs, /job-performance/:jobId
+CREATE INDEX IF NOT EXISTS idx_applications_job_status_applied
+    ON applications(job_id, status, applied_at DESC);
+
+-- Recruiter analytics recent activity and date trends by job.
+-- Used on: /api/v1/analytics/application-trends, /recent-applications
+CREATE INDEX IF NOT EXISTS idx_applications_job_applied
+    ON applications(job_id, applied_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- APPLICATION TIMELINE INDEXES
@@ -86,6 +101,12 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 -- Filter unread notifications efficiently.
 -- Used on: GET /api/v1/notifications?unreadOnly=true
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+
+-- Count unread notifications for a specific recruiter dashboard.
+-- Used on: GET /api/v1/analytics/summary
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread
+    ON notifications(user_id, is_read)
+    WHERE is_read = FALSE;
 
 -- Sort notifications chronologically (newest first).
 -- Used on: GET /api/v1/notifications

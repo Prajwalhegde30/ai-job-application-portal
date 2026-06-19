@@ -21,6 +21,7 @@ import {
   Settings,
   Users,
   Shield,
+  BarChart3,
 } from 'lucide-react';
 
 /**
@@ -58,6 +59,12 @@ export default function ProtectedLayout({
 
   /** Navigation items shown only to ADMIN role */
   const adminNav = [
+    {
+      name: 'Analytics',
+      href: '/admin/dashboard',
+      icon: BarChart3,
+      disabled: false,
+    },
     { name: 'My Jobs', href: '/admin/jobs', icon: Settings, disabled: false },
     {
       name: 'Applications',
