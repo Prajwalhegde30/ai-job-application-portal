@@ -16,6 +16,7 @@ import {
 } from './modules/applications';
 import { notificationsRoutes } from './modules/notifications';
 import { analyticsRoutes } from './modules/analytics';
+import { candidateDashboardRoutes } from './modules/candidate-dashboard';
 import { rbacTestRoutes } from './modules/rbac-test';
 import { sendSuccess } from './utils/response';
 
@@ -70,7 +71,7 @@ app.use('/api/v1/admin/applications', adminApplicationRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 // app.use('/api/v1/ai', aiRoutes);
-// app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/dashboard', candidateDashboardRoutes);
 
 // ---------------------
 // 404 Handler

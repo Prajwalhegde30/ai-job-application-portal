@@ -18,6 +18,7 @@
     "test:applications": "ts-node-dev --transpile-only src/db/test-application-flows.ts",
     "test:notifications": "ts-node-dev --transpile-only src/db/test-notification-flows.ts",
     "test:analytics": "ts-node-dev --transpile-only src/db/test-analytics-flows.ts",
+    "test:dashboard": "ts-node-dev --transpile-only src/db/test-candidate-dashboard-flows.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",
