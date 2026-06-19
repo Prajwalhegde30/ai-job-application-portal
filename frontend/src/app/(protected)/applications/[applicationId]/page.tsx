@@ -6,6 +6,9 @@ import {
   useApplicationDetail,
   useApplicationTimeline,
 } from '@/hooks/useApplications';
+import { useGetMatchAnalysis } from '@/hooks/useMatchAnalysis';
+import { MatchScorecard } from '@/components/analysis';
+import { useAuth } from '@/hooks/useAuth';
 import { APPLICATION_STATUS_CONFIG } from '@/lib/validators/application';
 import type { TimelineEventResponse } from '@/lib/validators/application';
 import {
@@ -34,12 +37,15 @@ export default function ApplicationDetailPage({
   params: Promise<{ applicationId: string }>;
 }) {
   const { applicationId } = use(params);
+  const { isAdmin } = useAuth();
   const {
     data: application,
     isLoading,
     isError,
   } = useApplicationDetail(applicationId);
   const { data: timeline } = useApplicationTimeline(applicationId);
+  const { data: matchReport, isLoading: isMatchLoading } =
+    useGetMatchAnalysis(applicationId);
 
   if (isLoading) {
     return (
@@ -142,6 +148,13 @@ export default function ApplicationDetailPage({
           </span>
         </div>
       </div>
+
+      {/* Match Scorecard */}
+      {isMatchLoading ? (
+        <div className="h-48 animate-pulse rounded-xl border border-slate-800 bg-slate-900/30 p-8" />
+      ) : matchReport ? (
+        <MatchScorecard report={matchReport} isAdminView={isAdmin} />
+      ) : null}
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main Content */}

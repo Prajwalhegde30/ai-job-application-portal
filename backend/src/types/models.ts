@@ -249,6 +249,29 @@ export interface AIAnalysis {
   updated_at: Date;
 }
 
+/** Represents a row in the `match_analysis` table. */
+export interface MatchAnalysis {
+  id: string;
+  application_id: string;
+  user_id: string;
+  resume_id: string;
+  job_id: string;
+  match_score: number;
+  matched_skills: string[];
+  missing_skills: string[];
+  additional_skills: string[];
+  education_score: number;
+  experience_score: number;
+  certification_score: number;
+  skills_score: number;
+  projects_score: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  created_at: Date;
+  updated_at: Date;
+}
+
 /** Represents a row in the `notifications` table. */
 export interface Notification {
   id: string;

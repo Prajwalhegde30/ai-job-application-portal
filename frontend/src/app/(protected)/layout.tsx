@@ -226,7 +226,7 @@ export default function ProtectedLayout({
               </button>
               <div className="hidden items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-400 sm:flex">
                 <Sparkles className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>Phase 12 Active: AI Resume Analysis</span>
+                <span>Phase 13 Active: Resume Match Score Engine</span>
               </div>
             </div>
 

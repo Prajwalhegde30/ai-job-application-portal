@@ -20,6 +20,7 @@
     "test:analytics": "ts-node-dev --transpile-only src/db/test-analytics-flows.ts",
     "test:dashboard": "ts-node-dev --transpile-only src/db/test-candidate-dashboard-flows.ts",
     "test:ai-analysis": "ts-node-dev --transpile-only src/db/test-ai-analysis-flows.ts",
+    "test:match-engine": "ts-node-dev --transpile-only src/db/test-match-engine-flows.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",
