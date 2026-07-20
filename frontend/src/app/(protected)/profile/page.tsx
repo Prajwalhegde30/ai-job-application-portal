@@ -200,15 +200,15 @@ export default function ProfilePage() {
     setSuccessMessage(null);
     setErrorMessage(null);
 
-    // Clean empty values to send null instead of empty string for optional fields
+    // Clean empty values to send empty strings for optional string fields
     const payload = {
-      headline: data.headline?.trim() || null,
-      bio: data.bio?.trim() || null,
-      location: data.location?.trim() || null,
-      phone: data.phone?.trim() || null,
-      website: data.website?.trim() || null,
-      linkedin_url: data.linkedin_url?.trim() || null,
-      github_url: data.github_url?.trim() || null,
+      headline: data.headline?.trim() || '',
+      bio: data.bio?.trim() || '',
+      location: data.location?.trim() || '',
+      phone: data.phone?.trim() || '',
+      website: data.website?.trim() || '',
+      linkedin_url: data.linkedin_url?.trim() || '',
+      github_url: data.github_url?.trim() || '',
       skills: data.skills || [],
       experience: (data.experience || []).map((exp) => ({
         company: exp.company.trim(),
