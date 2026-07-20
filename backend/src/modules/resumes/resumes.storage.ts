@@ -28,6 +28,26 @@ export async function uploadFile(
   buffer: Buffer,
   mimeType: string
 ): Promise<string> {
+  const supabaseUrl = env.SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const serviceKey =
+    env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    '';
+  const bucketName =
+    env.SUPABASE_BUCKET || process.env.SUPABASE_BUCKET || 'resumes';
+
+  console.error('[SUPABASE_DEBUG] Storage Upload Config Check:', {
+    supabaseUrl: supabaseUrl
+      ? supabaseUrl.replace(/:\/\/([^@]+@)/, '://***@')
+      : 'MISSING',
+    bucket: bucketName,
+    hasServiceKey: !!serviceKey,
+    keyPrefix: serviceKey ? serviceKey.slice(0, 12) : 'NONE',
+    nodeEnv: env.NODE_ENV,
+    isSupabaseClientInit: !!supabase,
+  });
+
   if (env.NODE_ENV === 'test' || !supabase) {
     logger.info(
       `[Mock Storage] Uploading file to ${storagePath} (${buffer.length} bytes)`
@@ -40,23 +60,26 @@ export async function uploadFile(
   // Actual Supabase call
   try {
     const { data, error } = await supabase.storage
-      .from(env.SUPABASE_BUCKET)
+      .from(bucketName)
       .upload(storagePath, buffer, {
         contentType: mimeType,
         upsert: true,
       });
 
     if (error) {
-      const cause = (error as { cause?: unknown }).cause;
-      logger.error('[Supabase Storage] Upload error:', {
-        message: error.message,
-        name: error.name,
-        cause: cause || null,
-        bucket: env.SUPABASE_BUCKET,
-        storagePath,
-      });
-      const causeMsg = cause
-        ? ` (${(cause as Error).message || JSON.stringify(cause)})`
+      const errWithDetails = error as Error & { cause?: unknown };
+      console.error('[SUPABASE_DEBUG] Upload Error Object:', error);
+      console.error(
+        '[SUPABASE_DEBUG] Upload Error Cause:',
+        errWithDetails.cause ?? null
+      );
+      console.error(
+        '[SUPABASE_DEBUG] Upload Error Stack:',
+        errWithDetails.stack ?? null
+      );
+
+      const causeMsg = errWithDetails.cause
+        ? ` (${errWithDetails.cause instanceof Error ? errWithDetails.cause.message : JSON.stringify(errWithDetails.cause)})`
         : '';
       throw new AppError(
         `File upload failed: ${error.message}${causeMsg}`,
@@ -70,17 +93,13 @@ export async function uploadFile(
     return data.path;
   } catch (err) {
     if (err instanceof AppError) throw err;
-    const errorObj = err as Error;
-    const cause = (errorObj as { cause?: unknown }).cause;
-    logger.error('[Supabase Storage] Upload exception:', {
-      message: errorObj.message,
-      name: errorObj.name,
-      cause: cause || null,
-      bucket: env.SUPABASE_BUCKET,
-      storagePath,
-    });
-    const causeMsg = cause
-      ? ` (${(cause as Error).message || JSON.stringify(cause)})`
+    const errorObj = err as Error & { cause?: unknown };
+    console.error('[SUPABASE_DEBUG] Exception Object:', errorObj);
+    console.error('[SUPABASE_DEBUG] Exception Cause:', errorObj.cause ?? null);
+    console.error('[SUPABASE_DEBUG] Exception Stack:', errorObj.stack);
+
+    const causeMsg = errorObj.cause
+      ? ` (${errorObj.cause instanceof Error ? errorObj.cause.message : JSON.stringify(errorObj.cause)})`
       : '';
     throw new AppError(
       `File upload failed: ${errorObj.message}${causeMsg}`,
