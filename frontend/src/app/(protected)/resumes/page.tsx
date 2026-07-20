@@ -44,6 +44,8 @@ export default function ResumesPage() {
     val: number;
   } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedResumeForReplace, setSelectedResumeForReplace] = useState<
     string | null
   >(null);
@@ -107,6 +109,8 @@ export default function ResumesPage() {
     }
 
     setValidationError(null);
+    setSuccessMessage(null);
+    setErrorMessage(null);
     setUploadProgress(0);
 
     const formData = new FormData();
@@ -124,8 +128,15 @@ export default function ResumesPage() {
         'resume-file-picker'
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = '';
-    } catch {
-      // Handled by react query error
+      setSuccessMessage('Resume uploaded successfully!');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: { message?: string } } };
+      };
+      setErrorMessage(
+        error.response?.data?.error?.message ||
+          'Failed to upload resume. Please try again.'
+      );
     } finally {
       setUploadProgress(null);
     }
@@ -140,6 +151,23 @@ export default function ResumesPage() {
       window.open(data.data.signedUrl, '_blank');
     } catch {
       alert('Failed to view resume');
+    }
+  };
+
+  // Activate Resume handler
+  const handleActivate = async (resumeId: string) => {
+    setSuccessMessage(null);
+    setErrorMessage(null);
+    try {
+      await activateResume.mutateAsync(resumeId);
+      setSuccessMessage('Resume set as active for applications!');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: { message?: string } } };
+      };
+      setErrorMessage(
+        error.response?.data?.error?.message || 'Failed to activate resume.'
+      );
     }
   };
 
@@ -158,10 +186,12 @@ export default function ResumesPage() {
     if (!file || !resumeId) return;
 
     if (!validateFile(file)) {
-      alert(validationError || 'Invalid file');
+      setErrorMessage(validationError || 'Invalid file');
       return;
     }
 
+    setSuccessMessage(null);
+    setErrorMessage(null);
     setReplaceProgress({ id: resumeId, val: 0 });
     const formData = new FormData();
     formData.append('file', file);
@@ -172,8 +202,14 @@ export default function ResumesPage() {
         formData,
         onProgress: (p) => setReplaceProgress({ id: resumeId, val: p }),
       });
-    } catch {
-      // Handled by react query
+      setSuccessMessage('Resume file replaced successfully!');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: { message?: string } } };
+      };
+      setErrorMessage(
+        error.response?.data?.error?.message || 'Failed to replace resume file.'
+      );
     } finally {
       setReplaceProgress(null);
       setSelectedResumeForReplace(null);
@@ -181,6 +217,24 @@ export default function ResumesPage() {
         'replace-file-picker'
       ) as HTMLInputElement;
       if (replaceInput) replaceInput.value = '';
+    }
+  };
+
+  // Delete Resume handler
+  const handleDelete = async (resumeId: string) => {
+    if (!confirm('Are you sure you want to delete this resume?')) return;
+    setSuccessMessage(null);
+    setErrorMessage(null);
+    try {
+      await deleteResume.mutateAsync(resumeId);
+      setSuccessMessage('Resume deleted successfully.');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: { message?: string } } };
+      };
+      setErrorMessage(
+        error.response?.data?.error?.message || 'Failed to delete resume.'
+      );
     }
   };
 
@@ -210,6 +264,37 @@ export default function ResumesPage() {
           applications.
         </p>
       </div>
+
+      {/* Alert Banners */}
+      {successMessage && (
+        <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 py-3 text-sm text-emerald-400">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span>{successMessage}</span>
+          </div>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="text-slate-400 hover:text-white"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="flex items-center justify-between rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-400">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <span>{errorMessage}</span>
+          </div>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-slate-400 hover:text-white"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Upload Column */}
@@ -460,7 +545,7 @@ export default function ResumesPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => activateResume.mutate(resume.id)}
+                            onClick={() => handleActivate(resume.id)}
                             disabled={activateResume.isPending}
                             className="h-8 text-xs text-slate-400 hover:bg-blue-950/30 hover:text-blue-400"
                           >
@@ -493,15 +578,7 @@ export default function ResumesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                'Are you sure you want to delete this resume?'
-                              )
-                            ) {
-                              deleteResume.mutate(resume.id);
-                            }
-                          }}
+                          onClick={() => handleDelete(resume.id)}
                           disabled={deleteResume.isPending}
                           className="h-8 text-xs text-slate-400 hover:bg-red-950/30 hover:text-red-400"
                         >

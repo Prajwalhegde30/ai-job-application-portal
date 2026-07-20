@@ -83,9 +83,6 @@ export function useUploadResume() {
         '/resumes',
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total && onProgress) {
               const progress = Math.round(
@@ -98,8 +95,9 @@ export function useUploadResume() {
       );
       return data.data.resume;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+      await queryClient.refetchQueries({ queryKey: resumeKeys.list() });
     },
   });
 }
@@ -117,8 +115,9 @@ export function useActivateResume() {
       );
       return data.data.resume;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+      await queryClient.refetchQueries({ queryKey: resumeKeys.list() });
     },
   });
 }
@@ -144,9 +143,6 @@ export function useReplaceResume() {
         `/resumes/${resumeId}`,
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total && onProgress) {
               const progress = Math.round(
@@ -159,8 +155,9 @@ export function useReplaceResume() {
       );
       return data.data.resume;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+      await queryClient.refetchQueries({ queryKey: resumeKeys.list() });
     },
   });
 }
@@ -175,8 +172,9 @@ export function useDeleteResume() {
     mutationFn: async (resumeId: string) => {
       await api.delete(`/resumes/${resumeId}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: resumeKeys.all });
+      await queryClient.refetchQueries({ queryKey: resumeKeys.list() });
     },
   });
 }

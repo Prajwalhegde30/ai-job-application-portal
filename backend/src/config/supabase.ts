@@ -5,8 +5,12 @@ import { logger } from '../utils/logger';
 
 // Initialize the Supabase Client if the keys are defined.
 // If NODE_ENV is not 'test' and variables are missing, env.ts will fail-fast before this runs.
-const supabaseUrl = env.SUPABASE_URL || '';
-const supabaseServiceKey = env.SUPABASE_SERVICE_KEY || '';
+const supabaseUrl = env.SUPABASE_URL || process.env.SUPABASE_URL || '';
+const supabaseServiceKey =
+  env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  '';
 
 export const supabase =
   supabaseUrl && supabaseServiceKey

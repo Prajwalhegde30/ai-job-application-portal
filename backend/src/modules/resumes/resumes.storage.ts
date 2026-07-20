@@ -38,25 +38,56 @@ export async function uploadFile(
   }
 
   // Actual Supabase call
-  const { data, error } = await supabase.storage
-    .from(env.SUPABASE_BUCKET)
-    .upload(storagePath, buffer, {
-      contentType: mimeType,
-      upsert: true,
-    });
+  try {
+    const { data, error } = await supabase.storage
+      .from(env.SUPABASE_BUCKET)
+      .upload(storagePath, buffer, {
+        contentType: mimeType,
+        upsert: true,
+      });
 
-  if (error) {
-    logger.error('Supabase upload error:', error);
+    if (error) {
+      const cause = (error as { cause?: unknown }).cause;
+      logger.error('[Supabase Storage] Upload error:', {
+        message: error.message,
+        name: error.name,
+        cause: cause || null,
+        bucket: env.SUPABASE_BUCKET,
+        storagePath,
+      });
+      const causeMsg = cause
+        ? ` (${(cause as Error).message || JSON.stringify(cause)})`
+        : '';
+      throw new AppError(
+        `File upload failed: ${error.message}${causeMsg}`,
+        500,
+        'STORAGE_UPLOAD_ERROR'
+      );
+    }
+
+    // Return the storage path key (not a public URL — bucket is private).
+    // Signed URLs are generated on-demand via getSignedUrl().
+    return data.path;
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    const errorObj = err as Error;
+    const cause = (errorObj as { cause?: unknown }).cause;
+    logger.error('[Supabase Storage] Upload exception:', {
+      message: errorObj.message,
+      name: errorObj.name,
+      cause: cause || null,
+      bucket: env.SUPABASE_BUCKET,
+      storagePath,
+    });
+    const causeMsg = cause
+      ? ` (${(cause as Error).message || JSON.stringify(cause)})`
+      : '';
     throw new AppError(
-      `File upload failed: ${error.message}`,
+      `File upload failed: ${errorObj.message}${causeMsg}`,
       500,
       'STORAGE_UPLOAD_ERROR'
     );
   }
-
-  // Return the storage path key (not a public URL — bucket is private).
-  // Signed URLs are generated on-demand via getSignedUrl().
-  return data.path;
 }
 
 /**
