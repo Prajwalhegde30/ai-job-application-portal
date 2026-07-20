@@ -38,9 +38,16 @@ const app = express();
 // ---------------------
 app.use(requestLogger);
 
-const allowedOrigins = env.FRONTEND_URL.split(',').map((url) =>
+const DEFAULT_ORIGINS = [
+  'http://localhost:3000',
+  'https://ai-job-application-portal-ten.vercel.app',
+];
+
+const envOrigins = env.FRONTEND_URL.split(',').map((url) =>
   url.trim().replace(/\/$/, '')
 );
+
+const allowedOrigins = Array.from(new Set([...DEFAULT_ORIGINS, ...envOrigins]));
 
 // ---------------------
 // Security Middleware
@@ -87,27 +94,28 @@ app.use(
   })
 );
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      const cleanOrigin = origin.replace(/\/$/, '');
-      if (
-        allowedOrigins.includes('*') ||
-        allowedOrigins.includes(cleanOrigin)
-      ) {
-        return callback(null, true);
-      }
-      return callback(
-        new Error(`CORS policy does not allow access from ${origin}`)
-      );
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    if (
+      allowedOrigins.includes('*') ||
+      allowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith('.vercel.app')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // ---------------------
 // Parsing Middleware
