@@ -85,11 +85,15 @@ const envSchema = z
  * Validated environment configuration.
  * Throws at import time if validation fails (fail-fast).
  */
-console.log({
-  AI_PROVIDER: process.env.AI_PROVIDER,
-  HAS_OPENROUTER_KEY: !!process.env.OPENROUTER_API_KEY,
-  KEY_PREFIX: process.env.OPENROUTER_API_KEY?.slice(0, 9),
-});
+console.log('===== ENVIRONMENT VARIABLES =====');
+
+console.log(
+  Object.keys(process.env)
+    .filter((key) => key.includes('OPEN') || key.includes('AI'))
+    .sort()
+);
+
+console.log('===============================');
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
