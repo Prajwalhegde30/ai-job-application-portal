@@ -13,6 +13,7 @@ const testScripts = [
   'test:ai-analysis',
   'test:match-engine',
   'test:career-advisor',
+  'test:openrouter',
 ];
 
 async function runAll() {

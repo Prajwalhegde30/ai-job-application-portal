@@ -4,3 +4,4 @@ export { getAIProvider, resetAIProvider } from './ai-provider.factory';
 export { MockProvider } from './mock.provider';
 export { OpenAIProvider } from './openai.provider';
 export { GeminiProvider } from './gemini.provider';
+export { OpenRouterProvider } from './openrouter.provider';

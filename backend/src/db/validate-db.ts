@@ -211,8 +211,8 @@ async function checkConstraints(): Promise<void> {
     const jobId = jobResult.rows[0].id;
 
     const resumeResult = await pool.query(
-      `INSERT INTO resumes (user_id, name, file_url, file_key)
-       VALUES ($1, 'Test Resume', 'https://test.com/resume.pdf', 'test/resume.pdf')
+      `INSERT INTO resumes (user_id, name, file_url, file_key, file_name, storage_path, resume_title)
+       VALUES ($1, 'Test Resume', 'https://test.com/resume.pdf', 'test/resume.pdf', 'test-resume.pdf', 'resumes/test/resume.pdf', 'Test Resume')
        RETURNING id`,
       [userId]
     );

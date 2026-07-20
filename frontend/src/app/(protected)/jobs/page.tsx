@@ -28,7 +28,7 @@ export default function JobsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [jobType, setJobType] = useState<string>('');
   const [page, setPage] = useState(1);
-  const limit = 9;
+  const limit = 20;
 
   // Debounce search
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(

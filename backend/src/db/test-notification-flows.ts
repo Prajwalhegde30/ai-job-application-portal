@@ -667,14 +667,24 @@ async function runTests(): Promise<void> {
         (n: any) => n.type === 'JOB_PUBLISHED' && n.title === 'New Job Posted'
       );
 
-      if (hasNotifA && hasNotifB) {
+      // Verify that ALL candidate users received the notification in the database
+      const dbNotifs = await db.query(
+        "SELECT user_id FROM notifications WHERE type = 'JOB_PUBLISHED' AND title = 'New Job Posted'"
+      );
+      const recipientIds = dbNotifs.rows.map((r: any) => r.user_id);
+
+      const missingCandidates = candidates.rows.filter(
+        (c: any) => !recipientIds.includes(c.id)
+      );
+
+      if (missingCandidates.length === 0 && hasNotifA && hasNotifB) {
         logPass(
           `Bulk JOB_PUBLISHED notifications successfully delivered to all candidates (Count: ${candCount})`
         );
       } else {
         logFail(
           'JOB_PUBLISHED broadcast failed',
-          `A: ${hasNotifA}, B: ${hasNotifB}`
+          `Missing: ${missingCandidates.length}, A: ${hasNotifA}, B: ${hasNotifB}`
         );
         console.log(
           'User A Notifications:',

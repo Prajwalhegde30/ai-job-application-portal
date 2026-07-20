@@ -233,16 +233,19 @@ export async function publishJob(
     );
   }
 
-  if (existing.rows[0].status !== 'DRAFT') {
+  if (
+    existing.rows[0].status !== 'DRAFT' &&
+    existing.rows[0].status !== 'CLOSED'
+  ) {
     throw new AppError(
-      `Cannot publish a job with status '${existing.rows[0].status}'. Only DRAFT jobs can be published.`,
+      `Cannot publish a job with status '${existing.rows[0].status}'. Only DRAFT or CLOSED jobs can be published.`,
       400,
       'INVALID_STATUS_TRANSITION'
     );
   }
 
   const result = await query<JobRow>(
-    `UPDATE jobs SET status = 'PUBLISHED', published_at = NOW(), updated_at = NOW()
+    `UPDATE jobs SET status = 'PUBLISHED', published_at = NOW(), closed_at = NULL, updated_at = NOW()
      WHERE id = $1 RETURNING *`,
     [jobId]
   );

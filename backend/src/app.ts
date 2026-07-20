@@ -38,6 +38,10 @@ const app = express();
 // ---------------------
 app.use(requestLogger);
 
+const allowedOrigins = env.FRONTEND_URL.split(',').map((url) =>
+  url.trim().replace(/\/$/, '')
+);
+
 // ---------------------
 // Security Middleware
 // ---------------------
@@ -51,7 +55,12 @@ app.use(
               scriptSrc: ["'self'", "'unsafe-inline'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
               imgSrc: ["'self'", 'data:', 'https:'],
-              connectSrc: ["'self'", env.FRONTEND_URL, 'https://*.supabase.co'],
+              connectSrc: [
+                "'self'",
+                ...allowedOrigins,
+                'https://*.supabase.co',
+                'https://openrouter.ai',
+              ],
               fontSrc: ["'self'"],
               objectSrc: ["'none'"],
               mediaSrc: ["'self'"],
@@ -80,7 +89,20 @@ app.use(
 
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(cleanOrigin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(
+        new Error(`CORS policy does not allow access from ${origin}`)
+      );
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -100,8 +122,16 @@ app.use(cookieParser());
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // ---------------------
-// Root Health Check Route Redirection (Railway Compatibility)
+// Root Health Check Route Redirection (Railway & Render Compatibility)
 // ---------------------
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'AI Job Application Portal API',
+    version: '1.0.0',
+    health: '/api/v1/health',
+  });
+});
 app.use('/live', healthRoutes);
 app.use('/ready', healthRoutes);
 app.use('/health', healthRoutes);

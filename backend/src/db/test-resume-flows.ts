@@ -54,6 +54,12 @@ async function runTests(): Promise<void> {
     console.log('Logging in standard User A (user@test.com)...');
     const userAToken = await getToken('user@test.com', 'User@123');
 
+    // Clean up any existing resumes for User A to ensure the tests start in a clean state
+    await db.query(
+      'DELETE FROM resumes WHERE user_id = (SELECT id FROM users WHERE email = $1)',
+      ['user@test.com']
+    );
+
     // Register User B dynamically
     const userBEmail = `userB_${Date.now()}@test.com`;
     const userBPassword = 'Password123!';
@@ -481,7 +487,57 @@ async function runTests(): Promise<void> {
         logFail(`Active mock storage file not found at ${activeMockFile}`);
       }
 
-      // User A deletes their active resume (resume 2)
+      // 1. Create a dummy job in the database directly to reference in application
+      const jobInsert = await db.query(`
+        INSERT INTO jobs (title, company, description, requirements, location, job_type, status, posted_by)
+        VALUES ('Test Job', 'Test Co', 'Description', 'Requirements', 'Location', 'FULL_TIME', 'PUBLISHED', (SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1))
+        RETURNING id
+      `);
+      const jobId = jobInsert.rows[0].id;
+
+      // 2. Create an application for User A referencing resume 2 (active resume)
+      const userARecord = await db.query(
+        'SELECT id FROM users WHERE email = $1',
+        ['user@test.com']
+      );
+      const userAId = userARecord.rows[0].id;
+
+      const appInsert = await db.query(
+        `
+        INSERT INTO applications (job_id, user_id, resume_id, status)
+        VALUES ($1, $2, $3, 'PENDING')
+        RETURNING id
+      `,
+        [jobId, userAId, resume2Id]
+      );
+      const applicationId = appInsert.rows[0].id;
+
+      // 3. Try to delete active resume (which is now attached to an active application PENDING)
+      const delBlockedRes = await fetch(`${BASE_URL}/resumes/${resume2Id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${userAToken}` },
+      });
+
+      if (delBlockedRes.status === 400) {
+        logPass('Blocked deletion of resume attached to an active application');
+      } else {
+        logFail(
+          'Should have blocked deletion of resume attached to an active application',
+          `Status: ${delBlockedRes.status}`
+        );
+      }
+
+      // 4. Update application status to REJECTED (inactive)
+      await db.query(
+        "UPDATE applications SET status = 'REJECTED' WHERE id = $1",
+        [applicationId]
+      );
+
+      // 5. Clean up referencing mock application and job to satisfy database foreign key constraints
+      await db.query('DELETE FROM applications WHERE id = $1', [applicationId]);
+      await db.query('DELETE FROM jobs WHERE id = $1', [jobId]);
+
+      // 6. User A deletes their resume (which now has no active applications and is unreferenced)
       const delRes = await fetch(`${BASE_URL}/resumes/${resume2Id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${userAToken}` },

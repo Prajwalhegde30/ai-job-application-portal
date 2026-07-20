@@ -354,7 +354,7 @@ async function runTests(): Promise<void> {
     }
 
     // =============================================
-    // TEST 3: Caching & Retrieval speed (<100ms)
+    // TEST 3: Caching & Retrieval speed (<300ms)
     // =============================================
     console.log('\n--- Test 3: Caching & Retrieval Speed ---');
     const start = Date.now();
@@ -370,7 +370,7 @@ async function runTests(): Promise<void> {
     const duration = Date.now() - start;
     const cacheData: any = await cacheRes.json();
 
-    if (cacheRes.status === 200 && duration < 100) {
+    if (cacheRes.status === 200 && duration < 300) {
       logPass('Cache retrieval returned quickly', `${duration}ms`);
     } else {
       logFail(

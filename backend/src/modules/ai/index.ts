@@ -1,2 +1,1 @@
-// AI module — will be implemented in Phase 6
-export {};
+export * from '../../core/ai';

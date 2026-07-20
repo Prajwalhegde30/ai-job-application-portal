@@ -16,9 +16,26 @@ const envSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET is required'),
     JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET is required'),
-    AI_PROVIDER: z.enum(['mock', 'openai', 'gemini']).default('mock'),
+    AI_PROVIDER: z
+      .enum(['mock', 'openai', 'gemini', 'openrouter'])
+      .default('mock'),
     OPENAI_API_KEY: z.string().optional(),
     GEMINI_API_KEY: z.string().optional(),
+    /**
+     * OpenRouter API key — required when AI_PROVIDER=openrouter.
+     * Obtain from https://openrouter.ai/keys
+     */
+    OPENROUTER_API_KEY: z.string().optional(),
+    /**
+     * OpenRouter model slug (default: openai/gpt-4o-mini-high:free).
+     * Any model listed on https://openrouter.ai/models is valid.
+     */
+    OPENROUTER_MODEL: z.string().optional(),
+    /**
+     * OpenRouter base URL — override only when using a proxy.
+     * Default: https://openrouter.ai/api/v1
+     */
+    OPENROUTER_BASE_URL: z.string().optional(),
     SUPABASE_URL: z.string().optional(),
     SUPABASE_SERVICE_KEY: z.string().optional(),
     SUPABASE_BUCKET: z.string().default('resumes'),
@@ -53,6 +70,8 @@ const envSchema = z
       if (data.NODE_ENV !== 'test') {
         if (data.AI_PROVIDER === 'openai' && !data.OPENAI_API_KEY) return false;
         if (data.AI_PROVIDER === 'gemini' && !data.GEMINI_API_KEY) return false;
+        if (data.AI_PROVIDER === 'openrouter' && !data.OPENROUTER_API_KEY)
+          return false;
       }
       return true;
     },

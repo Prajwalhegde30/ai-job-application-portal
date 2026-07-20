@@ -177,7 +177,8 @@ export async function getResumeDownloadUrl(
 
     const signedUrl = await resumesService.getResumeDownloadUrl(
       resumeId,
-      req.user!.userId
+      req.user!.userId,
+      req.user!.role
     );
     sendSuccess(res, { signedUrl });
   } catch (err) {

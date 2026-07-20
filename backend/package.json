@@ -22,6 +22,7 @@
     "test:ai-analysis": "ts-node-dev --transpile-only src/db/test-ai-analysis-flows.ts",
     "test:match-engine": "ts-node-dev --transpile-only src/db/test-match-engine-flows.ts",
     "test:career-advisor": "ts-node-dev --transpile-only src/db/test-career-advisor-flows.ts",
+    "test:openrouter": "ts-node-dev --transpile-only src/db/test-openrouter-provider.ts",
     "lint": "eslint src/ server.ts",
     "lint:fix": "eslint src/ server.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" server.ts",

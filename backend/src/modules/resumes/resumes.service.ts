@@ -94,7 +94,8 @@ export async function listResumes(userId: string): Promise<ResumeRow[]> {
 
 export async function getResumeDownloadUrl(
   resumeId: string,
-  userId: string
+  userId: string,
+  userRole?: string
 ): Promise<string> {
   const result = await query<ResumeRow>(
     'SELECT user_id, storage_path FROM resumes WHERE id = $1',
@@ -105,8 +106,8 @@ export async function getResumeDownloadUrl(
     throw new AppError('Resume not found', 404, 'RESUME_NOT_FOUND');
   }
 
-  // Ownership enforcement
-  if (result.rows[0].user_id !== userId) {
+  // Ownership enforcement: allow owner OR any ADMIN
+  if (result.rows[0].user_id !== userId && userRole !== 'ADMIN') {
     throw new AppError('You do not own this resume', 403, 'FORBIDDEN');
   }
 
@@ -182,6 +183,21 @@ export async function deleteResume(
   }
 
   const { storage_path, is_active } = check.rows[0];
+
+  // 1b. Check if the resume is attached to an active application (status IN ('PENDING', 'REVIEWING', 'SHORTLISTED'))
+  const activeApps = await query<{ id: string }>(
+    `SELECT id FROM applications 
+     WHERE resume_id = $1 AND status IN ('PENDING', 'REVIEWING', 'SHORTLISTED')`,
+    [resumeId]
+  );
+
+  if (activeApps.rows.length > 0) {
+    throw new AppError(
+      'Cannot delete resume attached to an active application',
+      400,
+      'ACTIVE_APPLICATION_CONSTRAINT'
+    );
+  }
 
   // 2. Perform DB deletion in transaction
   await query('BEGIN');

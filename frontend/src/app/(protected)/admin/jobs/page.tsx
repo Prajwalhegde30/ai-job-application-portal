@@ -302,6 +302,18 @@ export default function AdminJobsPage() {
                       <Send className="h-3.5 w-3.5" />
                     </Button>
                   )}
+                  {job.status === 'CLOSED' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePublish(job.id)}
+                      disabled={publishJob.isPending}
+                      className="h-8 w-8 p-0 text-slate-400 hover:bg-emerald-950/50 hover:text-emerald-400"
+                      title="Reopen"
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   {job.status === 'PUBLISHED' && (
                     <Button
                       variant="ghost"

@@ -54,12 +54,9 @@ export async function uploadFile(
     );
   }
 
-  // Return public URL or key
-  const { data: urlData } = supabase.storage
-    .from(env.SUPABASE_BUCKET)
-    .getPublicUrl(data.path);
-
-  return urlData.publicUrl;
+  // Return the storage path key (not a public URL — bucket is private).
+  // Signed URLs are generated on-demand via getSignedUrl().
+  return data.path;
 }
 
 /**

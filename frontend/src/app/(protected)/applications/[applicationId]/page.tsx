@@ -11,6 +11,7 @@ import { useGetCareerAdvice } from '@/hooks/useCareerAdvice';
 import { MatchScorecard } from '@/components/analysis';
 import { CareerAdvisorCard } from '@/components/ai';
 import { useAuth } from '@/hooks/useAuth';
+import api from '@/lib/api';
 import { APPLICATION_STATUS_CONFIG } from '@/lib/validators/application';
 import type { TimelineEventResponse } from '@/lib/validators/application';
 import {
@@ -183,11 +184,36 @@ export default function ApplicationDetailPage({
                 value={appliedDate}
               />
               {application.resumeSnapshotTitle && (
-                <InfoRow
-                  icon={<FileText className="h-4 w-4 text-slate-500" />}
-                  label="Resume"
-                  value={`${application.resumeSnapshotTitle} (${application.resumeSnapshotFileName})`}
-                />
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5">
+                    <FileText className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-slate-500">Resume</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-300">
+                        {application.resumeSnapshotTitle} (
+                        {application.resumeSnapshotFileName})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const { data } = await api.get<{
+                              data: { signedUrl: string };
+                            }>(`/resumes/${application.resumeId}`);
+                            window.open(data.data.signedUrl, '_blank');
+                          } catch {
+                            alert('Failed to view resume');
+                          }
+                        }}
+                        className="text-xs font-semibold text-blue-400 hover:text-blue-300 hover:underline"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
               {application.coverLetter && (
                 <div className="pt-2">

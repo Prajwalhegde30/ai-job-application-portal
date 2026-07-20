@@ -247,6 +247,7 @@ function ApplySection({ jobId }: { jobId: string }) {
   const [coverLetter, setCoverLetter] = useState('');
   const [showResumeDropdown, setShowResumeDropdown] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const hasApplied = checkData?.hasApplied || applied;
 
@@ -291,7 +292,7 @@ function ApplySection({ jobId }: { jobId: string }) {
   const selectedResume = resumes?.find((r) => r.id === selectedResumeId);
 
   const handleSubmit = async () => {
-    if (!selectedResumeId) return;
+    if (!selectedResumeId || !consentChecked) return;
     try {
       await applyMutation.mutateAsync({
         jobId,
@@ -411,6 +412,24 @@ function ApplySection({ jobId }: { jobId: string }) {
         </p>
       </div>
 
+      {/* Consent Checkbox */}
+      <div className="flex items-start gap-2 pt-1 pb-2">
+        <input
+          id="consent-checkbox"
+          type="checkbox"
+          checked={consentChecked}
+          onChange={(e) => setConsentChecked(e.target.checked)}
+          className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500"
+        />
+        <label
+          htmlFor="consent-checkbox"
+          className="cursor-pointer text-xs leading-normal text-slate-400 select-none"
+        >
+          I consent to sharing my resume details and profile analytics with the
+          recruiter of this job posting. <span className="text-red-400">*</span>
+        </label>
+      </div>
+
       {/* Error message */}
       {applyMutation.isError && (
         <div className="rounded-lg border border-red-800/50 bg-red-950/30 px-3 py-2 text-xs text-red-400">
@@ -427,7 +446,9 @@ function ApplySection({ jobId }: { jobId: string }) {
       <Button
         id="submit-application-button"
         onClick={handleSubmit}
-        disabled={!selectedResumeId || applyMutation.isPending}
+        disabled={
+          !selectedResumeId || !consentChecked || applyMutation.isPending
+        }
         className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-violet-500 disabled:opacity-50"
       >
         {applyMutation.isPending ? (

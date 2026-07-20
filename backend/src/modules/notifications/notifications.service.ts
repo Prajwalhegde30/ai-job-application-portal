@@ -144,28 +144,52 @@ export async function createBulkNotifications(
   try {
     await client.query('BEGIN');
 
-    for (const userId of userIds) {
-      const res = await client.query<NotificationRow>(
-        `INSERT INTO notifications (user_id, type, title, message, link, is_read, created_at)
-         VALUES ($1, $2, $3, $4, $5, FALSE, NOW())
-         RETURNING *`,
-        [userId, data.type, data.title, data.message, data.link || null]
-      );
-      const notification = res.rows[0];
+    const values: unknown[] = [];
+    const valuePlaceholders: string[] = [];
 
-      // Simulated real-time broadcast
-      await notificationBroadcaster.broadcast(userId, {
-        notificationId: notification.id,
-        userId: notification.user_id,
-        type: notification.type,
-        title: notification.title,
-        message: notification.message,
-        link: notification.link,
-        createdAt: notification.created_at,
-      });
-    }
+    userIds.forEach((userId, index) => {
+      const offset = index * 5;
+      valuePlaceholders.push(
+        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, FALSE, NOW())`
+      );
+      values.push(
+        userId,
+        data.type,
+        data.title,
+        data.message,
+        data.link || null
+      );
+    });
+
+    const queryText = `
+      INSERT INTO notifications (user_id, type, title, message, link, is_read, created_at)
+      VALUES ${valuePlaceholders.join(', ')}
+      RETURNING *
+    `;
+
+    const res = await client.query<NotificationRow>(queryText, values);
 
     await client.query('COMMIT');
+
+    // Asynchronously broadcast notifications in real-time
+    res.rows.forEach((notification) => {
+      notificationBroadcaster
+        .broadcast(notification.user_id, {
+          notificationId: notification.id,
+          userId: notification.user_id,
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          createdAt: notification.created_at,
+        })
+        .catch((err) => {
+          logger.error(
+            '[NotificationsService] Real-time broadcast failed:',
+            err
+          );
+        });
+    });
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

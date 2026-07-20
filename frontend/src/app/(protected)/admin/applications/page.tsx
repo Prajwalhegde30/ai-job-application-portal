@@ -11,6 +11,7 @@ import { APPLICATION_STATUS_CONFIG } from '@/lib/validators/application';
 import type { ApplicationResponse } from '@/lib/validators/application';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import api from '@/lib/api';
 import {
   Search,
   Users,
@@ -386,6 +387,22 @@ function AdminApplicationCard({
                   ({application.resumeSnapshotFileName})
                 </span>
               </span>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const { data } = await api.get<{
+                      data: { signedUrl: string };
+                    }>(`/resumes/${application.resumeId}`);
+                    window.open(data.data.signedUrl, '_blank');
+                  } catch {
+                    alert('Failed to view resume');
+                  }
+                }}
+                className="ml-2 font-semibold text-blue-400 hover:text-blue-300 hover:underline"
+              >
+                Download
+              </button>
             </div>
           )}
 
