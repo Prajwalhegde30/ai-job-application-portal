@@ -85,15 +85,7 @@ const envSchema = z
  * Validated environment configuration.
  * Throws at import time if validation fails (fail-fast).
  */
-console.log('===== ENVIRONMENT VARIABLES =====');
 
-console.log(
-  Object.keys(process.env)
-    .filter((key) => key.includes('OPEN') || key.includes('AI'))
-    .sort()
-);
-
-console.log('===============================');
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
