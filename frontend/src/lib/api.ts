@@ -7,8 +7,26 @@ import { getAccessToken, setAccessToken, clearAccessToken } from './auth';
  * - Automatically refreshes tokens on 401 responses
  * - Sends credentials (cookies) with every request for refresh token handling
  */
+/**
+ * Helper to construct and normalize the API base URL.
+ * Ensures the `/api/v1` suffix is appended if it is missing from the environment variable.
+ */
+const getBaseURL = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) {
+    return 'http://localhost:8080/api/v1';
+  }
+  // Trim trailing slash
+  const cleanUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+  // Append /api/v1 if it doesn't end with it
+  if (!cleanUrl.endsWith('/api/v1')) {
+    return `${cleanUrl}/api/v1`;
+  }
+  return cleanUrl;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
