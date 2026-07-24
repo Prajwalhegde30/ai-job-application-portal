@@ -16,13 +16,17 @@ const getBaseURL = (): string => {
   if (!envUrl) {
     return 'http://localhost:8080/api/v1';
   }
-  // Trim trailing slash
-  const cleanUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
-  // Append /api/v1 if it doesn't end with it
-  if (!cleanUrl.endsWith('/api/v1')) {
-    return `${cleanUrl}/api/v1`;
+  try {
+    const urlObj = new URL(envUrl);
+    return `${urlObj.origin}/api/v1`;
+  } catch (e) {
+    // Fallback normalization in case the environment variable isn't a full URL
+    const cleanUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+    if (!cleanUrl.endsWith('/api/v1')) {
+      return `${cleanUrl}/api/v1`;
+    }
+    return cleanUrl;
   }
-  return cleanUrl;
 };
 
 const api = axios.create({
